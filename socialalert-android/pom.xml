@@ -4,7 +4,13 @@
 	<groupId>com.bravson</groupId>
 	<artifactId>socialalert-android</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>apk</packaging>
 	<name>Social Alert Android</name>
+	
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.androidannotations</groupId>
@@ -17,9 +23,14 @@
 			<artifactId>androidannotations-api</artifactId>
 			<version>3.3.2</version>
 		</dependency>
+		<dependency>
+	      <groupId>com.google.android</groupId>
+	      <artifactId>android</artifactId>
+	      <version>4.1.1.4</version>
+	      <scope>provided</scope>
+	    </dependency>
 	</dependencies>
 	<build>
-		<sourceDirectory>src</sourceDirectory>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -28,6 +39,20 @@
 					<source>1.7</source>
 					<target>1.7</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.simpligility.maven.plugins</groupId>
+				<artifactId>android-maven-plugin</artifactId>
+				<version>4.3.0</version>
+				<configuration>
+					<sdk>
+						<platform>23</platform>
+						<path>C:\Dev\android-sdk</path>
+					</sdk>
+					<undeployBeforeDeploy>true</undeployBeforeDeploy>
+					<disableConflictingDependenciesWarning>true</disableConflictingDependenciesWarning>
+				</configuration>
+				<extensions>true</extensions>
 			</plugin>
 		</plugins>
 	</build>
