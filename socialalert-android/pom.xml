@@ -24,11 +24,18 @@
 			<version>3.3.2</version>
 		</dependency>
 		<dependency>
-	      <groupId>com.google.android</groupId>
+	      <groupId>android</groupId>
 	      <artifactId>android</artifactId>
-	      <version>4.1.1.4</version>
+	      <version>6.0_r1</version>
 	      <scope>provided</scope>
 	    </dependency>
+	    <!-- 
+	    <dependency>
+        	<artifactId>socialalert-common</artifactId>
+        	<groupId>com.bravson</groupId>
+			<version>0.0.1-SNAPSHOT</version>
+        </dependency>
+         -->
 	</dependencies>
 	<build>
 		<plugins>
