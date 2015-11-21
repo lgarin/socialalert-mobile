@@ -7,16 +7,12 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.EBean.Scope;
 import org.androidannotations.annotations.SupposeBackground;
-import org.androidannotations.annotations.sharedpreferences.Pref;
 
 import com.googlecode.jsonrpc4j.JsonRpcService;
 
 @EBean(scope = Scope.Singleton)
 public class JsonRpcServiceFactory {
 
-	@Pref
-	ApplicationPreferences_ preferences;
-	
 	@Bean
 	JsonRpcConnection serverConnection;
 	

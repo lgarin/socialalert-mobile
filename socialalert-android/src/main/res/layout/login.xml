@@ -4,22 +4,66 @@
     android:layout_height="match_parent"
     tools:context="${relativePackage}.${activityClass}" >
 
-    <TextView
-        android:id="@+id/textView1"
+    <EditText
+        android:id="@+id/emailAddress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:text="@string/hello_world" />
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginLeft="32dp"
+        android:layout_marginRight="32dp"
+        android:layout_marginTop="64dp"
+        android:drawableStart="@drawable/envelope54"
+        android:drawablePadding="@dimen/activity_horizontal_margin"
+        android:ems="10"
+        android:hint="@string/emailHint"
+        android:inputType="textEmailAddress" >
+
+        <requestFocus />
+    </EditText>
+
+    <EditText
+        android:id="@+id/password"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/emailAddress"
+        android:layout_alignEnd="@+id/emailAddress"
+        android:layout_below="@+id/emailAddress"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:drawableStart="@drawable/lock23"
+        android:drawablePadding="@dimen/activity_horizontal_margin"
+        android:ems="10"
+        android:hint="@string/passwordHint"
+        android:inputType="textPassword" />
 
     <Button
-        android:id="@+id/button1"
+        android:id="@+id/login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/textView1"
-        android:layout_marginTop="22dp"
-        android:text="Button" />
+        android:layout_alignStart="@+id/password"
+        android:layout_alignEnd="@+id/password"
+        android:layout_below="@+id/password"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:text="@string/loginText" />
+
+    <TextView
+        android:id="@+id/forgetPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/login"
+        android:layout_below="@+id/login"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:text="@string/forgetPasswordText"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/signup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/login"
+        android:layout_alignEnd="@+id/login"
+        android:layout_below="@+id/forgetPassword"
+        android:layout_marginTop="64dp"
+        android:text="@string/signupText" />
 
 </RelativeLayout>

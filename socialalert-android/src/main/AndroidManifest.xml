@@ -44,7 +44,7 @@
     <application
         android:hardwareAccelerated="true"
         android:icon="@drawable/app_sample_code"
-        android:label="@string/activity_sample_code" >
+        android:label="@string/title_activity_login">
         <activity
             android:name="com.bravson.socialalert.android.LoginActivity_"
             android:label="@string/title_activity_login" >
