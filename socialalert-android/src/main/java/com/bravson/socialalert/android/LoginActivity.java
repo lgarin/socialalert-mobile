@@ -1,5 +1,6 @@
 package com.bravson.socialalert.android;
 
+import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
@@ -8,11 +9,12 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.sharedpreferences.Pref;
 
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.bravson.socialalert.android.service.ApplicationPreferences_;
-import com.bravson.socialalert.android.service.JsonRpcServiceFactory;
+import com.bravson.socialalert.android.service.RpcBlockingCall;
 import com.bravson.socialalert.common.domain.UserInfo;
 import com.bravson.socialalert.common.facade.UserFacade;
 import com.mobsandgeeks.saripaar.annotation.Email;
@@ -34,11 +36,18 @@ public class LoginActivity extends ValidatedActivity {
 	@Order(2)
 	EditText password;
 	
+	@ViewById(R.id.login)
+	Button login;
+	
 	@Pref
 	ApplicationPreferences_ preferences;
 	
+	@App
+	AndroidApp application;
+	
 	@Bean
-	JsonRpcServiceFactory serviceFactory;
+	RpcBlockingCall rpc;
+	
 	
 	@Override
 	protected void onResume() {
@@ -57,17 +66,24 @@ public class LoginActivity extends ValidatedActivity {
 	}
 	
 	@UiThread
-	void showError(Exception exception) {
-		Toast.makeText(this, exception.getMessage(), Toast.LENGTH_LONG).show();;
+	void asyncShowLoginSuccess(UserInfo info) {
+		preferences.username().put(info.getEmail());
+		application.setCurrentUser(info);
+		Toast.makeText(this, info.toString(), Toast.LENGTH_LONG).show();
+	}
+	
+	@UiThread
+	void focusPassword() {
+		password.requestFocus();
 	}
 	
 	@Background
 	void asyncLogin(String user, String pwd) {
 		try {
-			UserInfo info = serviceFactory.get(UserFacade.class).login(user, pwd);
-			preferences.username().put(user);
+			UserInfo info = rpc.with(UserFacade.class).login(user, pwd);
+			asyncShowLoginSuccess(info);
 		} catch (Exception e) {
-			showError(e);
+			focusPassword();
 		}
 	}
 }

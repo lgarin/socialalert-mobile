@@ -19,11 +19,13 @@
 	
     <string name="title_activity_login">Login</string>
     <string name="signupText">Dont have an account? SIGNUP here.</string>
-    <string name="baseServerUrl">http://jcla3ndtozbxyghx.myfritz.net:18789/socialalert-app/rest</string>
+    <string name="baseServerUrl">http://gd04b:18789/socialalert-app/rest</string>
     <integer name="connectionTimeoutMillis">5000</integer>
     <integer name="readTimeoutMillis">10000</integer>
     <string name="loginText">Login</string>
     <string name="emailHint">email</string>
     <string name="passwordHint">password</string>
     <string name="forgetPasswordText">Forget password?</string>
+    <string name="loadingDataMessage">Loading please wait.....</string>
+    <string name="unknownErrorMessage">An unknown error occured!</string>
 </resources>
