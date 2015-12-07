@@ -32,10 +32,10 @@
 	    </dependency>
 	    <dependency>
 		   <groupId>com.google.android</groupId>
-		   <artifactId>support-v4</artifactId>
+		   <artifactId>support-v13</artifactId>
 		   <version>22.2.0</version>
 		   <scope>system</scope>
-		   <systemPath>${android.sdk.path}/extras/android/support/v4/android-support-v4.jar</systemPath>
+		   <systemPath>${android.sdk.path}/extras/android/support/v13/android-support-v13.jar</systemPath>
 		</dependency>
 		<dependency>
 		    <groupId>com.mobsandgeeks</groupId>
@@ -56,6 +56,11 @@
 				<configuration>
 					<source>1.7</source>
 					<target>1.7</target>
+					<compilerArgs>
+			            <arg>-Atrace=false</arg>
+			            <arg>-AlogLevel=warn</arg>
+			            <arg>-AlogFile=${project.basedir}/target/annotations.log</arg>
+        			</compilerArgs>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -69,6 +74,10 @@
 					</sdk>
 					<undeployBeforeDeploy>true</undeployBeforeDeploy>
 					<disableConflictingDependenciesWarning>true</disableConflictingDependenciesWarning>
+					<androidManifestFile>${project.basedir}/AndroidManifest.xml</androidManifestFile>
+					<genDirectory>${project.basedir}/gen</genDirectory>
+					<resourceDirectory>${project.basedir}/res</resourceDirectory>
+					<assetsDirectory>${project.basedir}/assets</assetsDirectory>
 				</configuration>
 				<extensions>true</extensions>
 			</plugin>

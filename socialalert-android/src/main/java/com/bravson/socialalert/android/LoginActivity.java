@@ -9,10 +9,6 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.sharedpreferences.Pref;
 
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
-
 import com.bravson.socialalert.android.service.ApplicationPreferences_;
 import com.bravson.socialalert.android.service.RpcBlockingCall;
 import com.bravson.socialalert.common.domain.UserInfo;
@@ -21,6 +17,11 @@ import com.mobsandgeeks.saripaar.annotation.Email;
 import com.mobsandgeeks.saripaar.annotation.NotEmpty;
 import com.mobsandgeeks.saripaar.annotation.Order;
 import com.mobsandgeeks.saripaar.annotation.Password;
+
+import android.content.Intent;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 @EActivity(R.layout.login)
 public class LoginActivity extends ValidatedActivity {
@@ -48,7 +49,6 @@ public class LoginActivity extends ValidatedActivity {
 	@Bean
 	RpcBlockingCall rpc;
 	
-	
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -59,17 +59,25 @@ public class LoginActivity extends ValidatedActivity {
 	}
 	
 	@Click(R.id.login)
-	void onClick() {
+	void onLoginClick() {
 		if (validate()) {
 			asyncLogin(emailAddress.getText().toString(), password.getText().toString());
 		}
+	}
+	
+	@Click(R.id.forgetPassword)
+	void onForgetPassword() {
+		Toast.makeText(this, "Forget password", Toast.LENGTH_LONG).show();
 	}
 	
 	@UiThread
 	void asyncShowLoginSuccess(UserInfo info) {
 		preferences.username().put(info.getEmail());
 		application.setCurrentUser(info);
-		Toast.makeText(this, info.toString(), Toast.LENGTH_LONG).show();
+		//Toast.makeText(this, info.toString(), Toast.LENGTH_LONG).show();
+		//FragmentActivity_.intent(this).start();
+		Intent intent = new Intent(this, FragmentActivity_.class);
+		startActivity(intent);
 	}
 	
 	@UiThread

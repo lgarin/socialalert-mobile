@@ -3,7 +3,7 @@
     <factorypathentry kind="VARJAR" id="M2_REPO/com/sun/codemodel/codemodel/2.6/codemodel-2.6.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/androidannotations/androidannotations-api/3.3.2/androidannotations-api-3.3.2.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/android/android/6.0_r1/android-6.0_r1.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="EXTJAR" id="C:\Dev\android-sdk\extras\android\support\v4\android-support-v4.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="EXTJAR" id="C:\Dev\android-sdk\extras\android\support\v13\android-support-v13.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/com/mobsandgeeks/android-saripaar/2.0.3/android-saripaar-2.0.3.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/joda-time/joda-time/2.8.2/joda-time-2.8.2.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/apache/commons/commons-lang3/3.4/commons-lang3-3.4.jar" enabled="true" runInBatchMode="false"/>

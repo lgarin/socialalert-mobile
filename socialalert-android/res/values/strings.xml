@@ -12,20 +12,29 @@
      distributed under the License is distributed on an "AS IS" BASIS,
      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
      See the License for the specific language governing permissions and
-     limitations under the License.
+     limitations under the License.
 -->
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-	
+
     <string name="title_activity_login">Login</string>
+    <string name="title_activity_top_media">SNYPIX</string>
     <string name="signupText">Dont have an account? SIGNUP here.</string>
-    <string name="baseServerUrl">http://gd04b:18789/socialalert-app/rest</string>
+    <string name="baseServerUrl">http://jcla3ndtozbxyghx.myfritz.net:18789/socialalert-app/rest</string>
+
     <integer name="connectionTimeoutMillis">5000</integer>
     <integer name="readTimeoutMillis">10000</integer>
+
     <string name="loginText">Login</string>
     <string name="emailHint">email</string>
     <string name="passwordHint">password</string>
     <string name="forgetPasswordText">Forget password?</string>
     <string name="loadingDataMessage">Loading please wait.....</string>
     <string name="unknownErrorMessage">An unknown error occured!</string>
+    <string name="first">First</string>
+    <string name="last">Last</string>
+    <string name="hello_world">Hello World</string>
+    <string name="title_activity_fragment">FragmentActivity</string>
+    <string name="action_settings">Settings</string>
+
 </resources>
