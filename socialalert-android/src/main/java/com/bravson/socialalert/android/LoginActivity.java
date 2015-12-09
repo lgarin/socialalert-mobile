@@ -74,10 +74,7 @@ public class LoginActivity extends ValidatedActivity {
 	void asyncShowLoginSuccess(UserInfo info) {
 		preferences.username().put(info.getEmail());
 		application.setCurrentUser(info);
-		//Toast.makeText(this, info.toString(), Toast.LENGTH_LONG).show();
-		//FragmentActivity_.intent(this).start();
-		Intent intent = new Intent(this, FragmentActivity_.class);
-		startActivity(intent);
+		startActivity(new Intent(this, FragmentActivity_.class));
 	}
 	
 	@UiThread
