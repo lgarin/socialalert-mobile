@@ -14,26 +14,25 @@
 	
 	<dependencies>
 		<dependency>
-			<groupId>org.androidannotations</groupId>
-			<artifactId>androidannotations</artifactId>
-			<version>3.3.2</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.androidannotations</groupId>
-			<artifactId>androidannotations-api</artifactId>
-			<version>3.3.2</version>
-		</dependency>
-		<dependency>
 	      <groupId>android</groupId>
 	      <artifactId>android</artifactId>
 	      <version>6.0_r1</version>
 	      <scope>provided</scope>
 	    </dependency>
+	    <!-- 
 	    <dependency>
-		   <groupId>com.google.android</groupId>
+        	<groupId>com.android.support</groupId>
+  			<artifactId>support-v4</artifactId>
+  			<version>23.1.1</version>
+  			<scope>system</scope>
+		   	<systemPath>${android.sdk.path}/extras/android/support/v4/android-support-v4.jar</systemPath>
+		   	<type>aar</type>
+        </dependency>
+         -->
+        <dependency>
+		   <groupId>com.android.support</groupId>
 		   <artifactId>support-v13</artifactId>
-		   <version>22.2.0</version>
+		   <version>23.1.1</version>
 		   <scope>system</scope>
 		   <systemPath>${android.sdk.path}/extras/android/support/v13/android-support-v13.jar</systemPath>
 		</dependency>
@@ -47,12 +46,23 @@
         	<groupId>com.bravson</groupId>
 			<version>0.0.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+			<groupId>org.androidannotations</groupId>
+			<artifactId>androidannotations</artifactId>
+			<version>3.3.2</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.androidannotations</groupId>
+			<artifactId>androidannotations-api</artifactId>
+			<version>3.3.2</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.3</version>
+				<version>3.1</version>
 				<configuration>
 					<source>1.7</source>
 					<target>1.7</target>
@@ -70,17 +80,27 @@
 				<configuration>
 					<sdk>
 						<platform>23</platform>
-						<path>C:\Dev\android-sdk</path>
+						<!-- <path>C:\Dev\android-sdk</path>  -->
 					</sdk>
 					<undeployBeforeDeploy>true</undeployBeforeDeploy>
 					<disableConflictingDependenciesWarning>true</disableConflictingDependenciesWarning>
-					<androidManifestFile>${project.basedir}/AndroidManifest.xml</androidManifestFile>
+					<sourceManifestFile>${project.basedir}/AndroidManifest.xml</sourceManifestFile>
+					<androidManifestFile>${project.basedir}/src/main/AndroidManifest.xml</androidManifestFile>
+					<updatedManifestFile>${project.build.directory}/AndroidManifest.xml</updatedManifestFile>
 					<genDirectory>${project.basedir}/gen</genDirectory>
 					<resourceDirectory>${project.basedir}/res</resourceDirectory>
 					<assetsDirectory>${project.basedir}/assets</assetsDirectory>
+					<failOnNonStandardStructure>false</failOnNonStandardStructure>
 				</configuration>
 				<extensions>true</extensions>
 			</plugin>
 		</plugins>
 	</build>
+	<repositories>
+		<repository>
+			<id>com.android.support</id>
+			<name>android.support</name>
+			<url>file:///C:/Dev/android-sdk/extras/android/m2repository/</url>
+		</repository>
+	</repositories>
 </project>

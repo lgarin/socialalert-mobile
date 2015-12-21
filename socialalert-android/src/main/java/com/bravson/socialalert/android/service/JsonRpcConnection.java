@@ -36,8 +36,7 @@ public class JsonRpcConnection {
 	private Proxy connectionProxy = Proxy.NO_PROXY;
 	private SSLContext sslContext = null;
 	private HostnameVerifier hostNameVerifier = null;
-	private String cookie;
-	
+	private String cookie;	
 	private JsonRpcClient client;
 	
 	@AfterInject
@@ -111,7 +110,10 @@ public class JsonRpcConnection {
 		}
 
 		// store session id
-		cookie = extractCookie(con);
+		String newCookie = extractCookie(con);
+		if (newCookie != null) {
+			cookie = newCookie;
+		}
 
 		// read and return value
 		InputStream ips = con.getInputStream();

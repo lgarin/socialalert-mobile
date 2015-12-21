@@ -19,14 +19,15 @@ import com.bravson.socialalert.common.facade.MediaFacade;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.Toast;
 
-@EActivity(R.layout.activity_fragment)
-public class FragmentActivity extends Activity {
+@EActivity(R.layout.top_media)
+public class TopMediaActivity extends Activity {
 	
 	@Bean
 	RpcBlockingCall rpc;
@@ -56,9 +57,9 @@ public class FragmentActivity extends Activity {
 		super.onResume();
 		gridView.setOnScrollListener(null);
 		populateGrid(null);
-		gridView.setOnScrollListener(new PagerScrollListener(mediaPageSize / 2) {
+		gridView.setOnScrollListener(new PagerScrollListener(mediaPageSize) {
 			@Override
-			public void loadMore(int page, int totalItemsCount) {
+			public void load(int page) {
 				loadPage(page);
 			}
 		});
@@ -71,6 +72,11 @@ public class FragmentActivity extends Activity {
 			populateGrid(result);
 		} catch (Exception e) {
 			Toast.makeText(this, "Failed query", Toast.LENGTH_LONG).show();
+			if (page == 0) {
+				finish();
+			} else {
+				gridView.setOnScrollListener(null);
+			}
 		}
 	}
 	
@@ -88,7 +94,7 @@ public class FragmentActivity extends Activity {
 
     @ItemClick(R.id.gridView)
     void personListItemClicked(MediaInfo mediaInfo) {
-        Toast.makeText(this, mediaInfo.getTitle(), Toast.LENGTH_SHORT).show();
+        startActivity(new Intent(this, MediaPreviewActivity_.class).putExtra("mediaUri", mediaInfo.getMediaUri()));
     }
 	
 	public static class MediaThumbnailAdapater extends ArrayAdapter<MediaInfo> {

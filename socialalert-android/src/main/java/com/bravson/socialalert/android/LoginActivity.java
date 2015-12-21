@@ -55,9 +55,11 @@ public class LoginActivity extends ValidatedActivity {
 		if (preferences.username().exists()) {
 			emailAddress.setText(preferences.username().get());
 			password.requestFocus();
+		} else {
+			emailAddress.requestFocus();
 		}
 	}
-	
+
 	@Click(R.id.login)
 	void onLoginClick() {
 		if (validate()) {
@@ -74,7 +76,7 @@ public class LoginActivity extends ValidatedActivity {
 	void asyncShowLoginSuccess(UserInfo info) {
 		preferences.username().put(info.getEmail());
 		application.setCurrentUser(info);
-		startActivity(new Intent(this, FragmentActivity_.class));
+		startActivity(new Intent(this, TopMediaActivity_.class));
 	}
 	
 	@UiThread

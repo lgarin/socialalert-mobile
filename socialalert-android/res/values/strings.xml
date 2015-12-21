@@ -22,6 +22,7 @@
     <string name="signupText">Dont have an account? SIGNUP here.</string>
     <string name="baseServerUrl">http://jcla3ndtozbxyghx.myfritz.net:18789/socialalert-app/rest</string>
     <string name="baseThumbnailUrl">http://jcla3ndtozbxyghx.myfritz.net:18789/socialalert-app/thumbnail</string>
+    <string name="basePreviewUrl">http://jcla3ndtozbxyghx.myfritz.net:18789/socialalert-app/preview</string>
 
     <integer name="connectionTimeoutMillis">5000</integer>
     <integer name="readTimeoutMillis">10000</integer>
@@ -44,5 +45,4 @@
     <string name="title_section1">Section 1</string>
     <string name="title_section2">Section 2</string>
     <string name="title_section3">Section 3</string>
-
 </resources>

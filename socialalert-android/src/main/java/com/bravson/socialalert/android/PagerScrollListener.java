@@ -4,37 +4,34 @@ import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 
 public abstract class PagerScrollListener implements OnScrollListener {
-    private final int bufferItemCount;
-    private int currentPage = -1;
+    private final int pageSize;
     private int itemCount;
     private boolean isLoading;
 
-    public PagerScrollListener(int bufferItemCount) {
-        this.bufferItemCount = bufferItemCount;
+    public PagerScrollListener(int pageSize) {
+        this.pageSize = pageSize;
     }
 
-    public abstract void loadMore(int page, int totalItemsCount);
+    public abstract void load(int page);
 
     @Override
-    public void onScrollStateChanged(AbsListView view, int scrollState) {
+    public final void onScrollStateChanged(AbsListView view, int scrollState) {
         // Do Nothing
     }
 
     @Override
-    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount)
+    public final void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount)
     {
     	if (!isLoading && totalItemCount == 0) {
-        	currentPage = -1;
             itemCount = totalItemCount;
             isLoading = true;
-            loadMore(0, totalItemCount);
+            load(0);
         } else if (isLoading && (totalItemCount > itemCount)) {
         	itemCount = totalItemCount;
             isLoading = false;
-            currentPage++;
-        } else if (!isLoading && (totalItemCount - visibleItemCount)<=(firstVisibleItem + bufferItemCount)) {
+        } else if (!isLoading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + pageSize / 2)) {
         	isLoading = true;
-            loadMore(currentPage + 1, totalItemCount);
+            load((itemCount + pageSize - 1) / pageSize);
         }
     }
 }

@@ -42,4 +42,11 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.eclipse.wst.common.project.facet.core.nature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>AndroidManifest.xml</name>
+			<type>1</type>
+			<locationURI>PROJECT_LOC/src/main/AndroidManifest.xml</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>
