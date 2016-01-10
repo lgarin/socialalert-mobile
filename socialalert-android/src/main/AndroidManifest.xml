@@ -34,13 +34,17 @@
         android:requiresSmallestWidthDp="320" />
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" />
+ 	<uses-feature android:name="android.hardware.camera.autofocus" />
+ 	<uses-feature android:name="android.hardware.camera.flash"/>
 
     <application
         android:name=".AndroidApp_"
         android:allowBackup="true"
         android:hardwareAccelerated="true"
         android:icon="@drawable/app_sample_code"
-        android:label="@string/title_activity_login" >
+        android:label="@string/title_activity_top_media" >
         <activity
             android:name=".LoginActivity_"
             android:icon="@drawable/instagram12"
@@ -56,6 +60,9 @@
             
         </activity>
         <activity android:name=".MediaPreviewActivity_">
+			<intent-filter ></intent-filter>
+        </activity>
+        <activity android:name=".CameraActivity_">
 			<intent-filter ></intent-filter>
         </activity>
     </application>

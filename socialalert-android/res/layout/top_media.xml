@@ -10,16 +10,39 @@
         android:layout_height="20sp"
         android:text="Test" >
 	</TextView>
-    <GridView
-        android:id="@+id/gridView"
+    
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-	    android:numColumns="3"
-	    android:verticalSpacing="10dp"
-	    android:horizontalSpacing="10dp"
-	    android:stretchMode="columnWidth"
-	    android:gravity="center" >
-    </GridView>
+        android:layout_height="wrap_content" >
+
+        <GridView
+            android:id="@+id/gridView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:horizontalSpacing="10dp"
+            android:numColumns="3"
+            android:stretchMode="columnWidth"
+            android:verticalSpacing="10dp" >
+        </GridView>
+
+        <ImageButton
+            android:id="@+id/cameraButton"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginBottom="20dp"
+            android:layout_marginRight="20dp"
+            android:alpha="50"
+            android:contentDescription="Camera"
+            android:maxHeight="64dp"
+            android:maxWidth="64dp"
+            android:src="@drawable/instagram12" />
+
+    </RelativeLayout>
+
+    
 
 </LinearLayout>
 

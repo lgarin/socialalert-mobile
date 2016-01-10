@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
+import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.UiThread;
@@ -51,6 +52,11 @@ public class TopMediaActivity extends Activity {
         adapter = new MediaThumbnailAdapater(this);
 		gridView.setAdapter(adapter);
     }
+	
+	@Click(R.id.cameraButton)
+	void onCameraClick() {
+		startActivity(new Intent(this, CameraActivity_.class));
+	}
 
 	@Override
 	protected void onResume() {
