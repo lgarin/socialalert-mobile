@@ -15,87 +15,14 @@
             android:layout_height="fill_parent"
             android:layout_weight="1" />
 
-        <LinearLayout
+        <fragment android:id="@+id/mediaCategory"
+            android:name="com.bravson.socialalert.android.MediaCategoryView_"
             android:layout_width="fill_parent"
-            android:layout_height="40dp"
+    		android:layout_height="40dp"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:background="#80000000"
-            android:alpha="100" >
-
-            <ImageButton
-                android:id="@+id/category1"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-            	android:layout_weight="1"
-               android:background="@drawable/button_states"
-                android:src="@drawable/earth213" />
-            
-            <ImageButton
-                android:id="@+id/category2"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-            	android:layout_weight="1"
-                android:background="@drawable/button_states"
-                android:src="@drawable/bag67" />
-            
-            <ImageButton
-                android:id="@+id/category3"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-            	android:layout_weight="1"
-                android:background="@drawable/button_states"
-                android:src="@drawable/smiling36" />
-            
-            <ImageButton
-                android:id="@+id/category4"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-            	android:layout_weight="1"
-                android:background="@drawable/button_states"
-                android:src="@drawable/heart296" />
-            
-            <ImageButton
-                android:id="@+id/category5"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-            	android:layout_weight="1"
-                android:background="@drawable/button_states"
-                android:src="@drawable/christmas218" />
-
-            <ImageButton
-                android:id="@+id/category6"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-            	android:layout_weight="1"
-                android:background="@drawable/button_states"
-                android:src="@drawable/football160" />
-            
-            <ImageButton
-                android:id="@+id/category7"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-            	android:layout_weight="1"
-                android:background="@drawable/button_states"
-                android:src="@drawable/alarm63" />
-            
-            <ImageButton
-                android:id="@+id/category8"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-            	android:layout_weight="1"
-                android:background="@drawable/button_states"
-                android:src="@drawable/question1" />
-            
-        </LinearLayout>
+    		android:layout_alignParentLeft="true"
+    		android:alpha="100"
+    		android:background="#80000000"/>
 
     </RelativeLayout>
 
@@ -109,7 +36,7 @@
             android:layout_height="fill_parent"
             android:layout_gravity="center"
             android:layout_weight="0.2"
-            android:background="?android:selectableItemBackground"
+            android:background="@drawable/button_states"
             android:src="@drawable/instagram12" />
 
         <ImageButton
@@ -127,7 +54,7 @@
             android:layout_height="fill_parent"
             android:layout_gravity="center"
             android:layout_weight="0.2"
-            android:background="?android:selectableItemBackground"
+            android:background="@drawable/button_states"
             android:src="@drawable/video107" />
 
     </LinearLayout>

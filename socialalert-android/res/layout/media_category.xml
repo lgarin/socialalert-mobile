@@ -1,0 +1,76 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" >
+
+    <ImageButton
+        android:id="@+id/category1"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:background="@drawable/button_states"
+        android:src="@drawable/earth213" />
+
+    <ImageButton
+        android:id="@+id/category2"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:background="@drawable/button_states"
+        android:src="@drawable/bag67" />
+
+    <ImageButton
+        android:id="@+id/category3"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:background="@drawable/button_states"
+        android:src="@drawable/smiling36" />
+
+    <ImageButton
+        android:id="@+id/category4"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:background="@drawable/button_states"
+        android:src="@drawable/heart296" />
+
+    <ImageButton
+        android:id="@+id/category5"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:background="@drawable/button_states"
+        android:src="@drawable/christmas218" />
+
+    <ImageButton
+        android:id="@+id/category6"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:background="@drawable/button_states"
+        android:src="@drawable/football160" />
+
+    <ImageButton
+        android:id="@+id/category7"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:background="@drawable/button_states"
+        android:src="@drawable/alarm63" />
+
+    <ImageButton
+        android:id="@+id/category8"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:background="@drawable/button_states"
+        android:src="@drawable/question1" />
+</LinearLayout>
