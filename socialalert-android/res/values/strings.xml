@@ -36,6 +36,9 @@
     <string name="forgetPasswordText">Forget password?</string>
     <string name="loadingDataMessage">Loading please wait.....</string>
     <string name="unknownErrorMessage">An unknown error occured!</string>
+    <string name="titleHint">Title</string>
+    <string name="tagsHint">Tags</string>
+    <string name="descriptionHint">Description</string>
     <string name="first">First</string>
     <string name="last">Last</string>
     <string name="hello_world">Hello World</string>

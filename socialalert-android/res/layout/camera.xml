@@ -1,8 +1,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/camera"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+    tools:context="com.bravson.socialalert.android.CameraActivity">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -16,7 +18,7 @@
             android:layout_weight="1" />
 
         <fragment android:id="@+id/mediaCategory"
-            android:name="com.bravson.socialalert.android.MediaCategoryView_"
+            android:name="com.bravson.socialalert.android.MediaCategoryFragment_"
             android:layout_width="fill_parent"
     		android:layout_height="40dp"
             android:layout_alignParentBottom="true"

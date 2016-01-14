@@ -9,6 +9,7 @@ import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.Extra;
+import org.androidannotations.annotations.FragmentById;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
@@ -54,17 +55,11 @@ public class MediaPreviewActivity extends Activity {
 	@ViewById(R.id.commentCountView)
 	TextView commentCountView;
 	
-	@ViewById(R.id.imageView)
-	ImageView imageView;
-	
-	@ViewById(R.id.videoView)
-	VideoView videoView;
+	@FragmentById(R.id.mediaFrame)
+	MediaFrameFragment mediaFrame;
 	
 	@Bean
 	RpcBlockingCall rpc;
-	
-	@StringRes
-	String basePreviewUrl;
 	
 	@StringRes
 	String baseThumbnailUrl;
@@ -84,8 +79,7 @@ public class MediaPreviewActivity extends Activity {
 	}
 	
 	void clearData() {
-		imageView.setImageURI(null);
-		videoView.setVideoURI(null);
+		mediaFrame.clearFrame();
 		profileView.setImageResource(R.drawable.user168);
 		titleView.setText("");
 		descriptionView.setText("");
@@ -107,20 +101,7 @@ public class MediaPreviewActivity extends Activity {
 	
 	@UiThread
 	void showInfo(MediaInfo info) {
-		Uri mediaUri = Uri.parse(basePreviewUrl + "/" + info.getMediaUri());
-		if (info.getType() == MediaType.VIDEO) {
-			videoView.setVideoURI(mediaUri);
-			videoView.setVisibility(View.VISIBLE);
-			imageView.setVisibility(View.INVISIBLE);
-		} else if (info.getType() == MediaType.PICTURE) {
-			//imageView.setImageURI(mediaUri);
-			loadImage(info.getMediaUri());
-			videoView.setVisibility(View.INVISIBLE);
-			imageView.setVisibility(View.VISIBLE);
-		} else {
-			videoView.setVisibility(View.INVISIBLE);
-			imageView.setVisibility(View.INVISIBLE);
-		}
+		mediaFrame.showRemoteMedia(info.getType(), info.getMediaUri());
 		usernameView.setText(info.getCreator());
 		timestampView.setText(DateUtils.getRelativeTimeSpanString(info.getTimestamp().getMillis()));
 		titleView.setText(info.getTitle());
@@ -140,23 +121,6 @@ public class MediaPreviewActivity extends Activity {
 			URL url = new URL(baseThumbnailUrl + "/" + uri);
 			try (InputStream is = url.openStream()) {
 				showProfileImage(RoundedBitmapDrawableFactory.create(getResources(), is));
-			}
-		} catch (IOException e) {
-			//finish();
-		}
-	}
-	
-	@UiThread
-	public void showImage(Bitmap bitmap) {
-		imageView.setImageBitmap(bitmap);
-	}
-	
-	@Background
-	public void loadImage(URI uri) {
-		try {
-			URL url = new URL(basePreviewUrl + "/" + uri);
-			try (InputStream is = url.openStream()) {
-				showImage(BitmapFactory.decodeStream(is));
 			}
 		} catch (IOException e) {
 			//finish();

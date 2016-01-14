@@ -20,6 +20,7 @@ import org.androidannotations.annotations.ViewById;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
@@ -35,6 +36,8 @@ import android.media.ImageReader;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.media.MediaRecorder;
 import android.support.annotation.NonNull;
+import android.support.annotation.UiThread;
+import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.SurfaceView;
@@ -63,7 +66,6 @@ public class CameraActivity extends Activity {
 	
 	private Semaphore cameraOpenCloseLock = new Semaphore(1);
 	
-	@AfterViews
 	void initCameraDevice() {
 		if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
 	         requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
@@ -83,13 +85,13 @@ public class CameraActivity extends Activity {
 		StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 		Size largest = Collections.max(Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)), new CompareSizesByArea());
 		imageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(), ImageFormat.JPEG, 2);
-		imageReader.setOnImageAvailableListener(imageAvailableListener, null);
+		imageReader.setOnImageAvailableListener(new ImageAvailableListener(), null);
 	}
 	
-	OnImageAvailableListener imageAvailableListener = new OnImageAvailableListener() {
+	class ImageAvailableListener implements OnImageAvailableListener {
 		
 		public void onImageAvailable(ImageReader reader) {
-			saveImage(reader.acquireNextImage(), new File("test.jpg"));
+			saveImage(reader.acquireNextImage(), new File(getFilesDir(), "test.jpg"));
 		}
 	};
 	
@@ -102,27 +104,41 @@ public class CameraActivity extends Activity {
     	}
     }
     
+    private void writeBuffer(ByteBuffer buffer, File file) throws IOException {
+    	FileOutputStream output = openFileOutput(file.getName(), MODE_PRIVATE);
+    	try {
+	    	while (buffer.hasRemaining()) {
+	    		output.getChannel().write(buffer);
+	    	}
+    	} finally {
+    		output.close();
+    	}
+    }
+    
     @Background
     void saveImage(Image image, File file) {
     	ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-        byte[] bytes = new byte[buffer.remaining()];
-        buffer.get(bytes);
-        FileOutputStream output = null;
         try {
-            output = openFileOutput(file.getName(), MODE_PRIVATE);
-            output.write(bytes);
+        	writeBuffer(buffer, file);
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         } finally {
         	image.close();
-            if (null != output) {
-                try {
-                    output.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
+        
+        startPost(file);
+    }
+    
+    @UiThread
+    void startPost(File file) {
+    	startActivity(new Intent(this, PostMediaActivity_.class).putExtra("imageFile", file));
+    }
+    
+    @Override
+    protected void onResume() {
+    	super.onResume();
+    	initCameraDevice();
     }
 	
 	@Override
@@ -269,7 +285,7 @@ public class CameraActivity extends Activity {
                 captureBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
                 captureBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
 				captureSession.stopRepeating();
-				captureSession.capture(captureBuilder.build(), new ImageCaptureCallback(), null);
+				captureSession.capture(captureBuilder.build(), null, null);
 			} catch (CameraAccessException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -277,10 +293,12 @@ public class CameraActivity extends Activity {
 		}
 	}
 	
+	/*
 	static class ImageCaptureCallback extends android.hardware.camera2.CameraCaptureSession.CaptureCallback {
 		@Override
 		public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
 			
 		}
 	}
+	*/
 }

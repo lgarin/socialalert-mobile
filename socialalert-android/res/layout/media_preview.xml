@@ -42,25 +42,12 @@
         
     </LinearLayout>
     
-    <FrameLayout
+   <fragment
+        android:id="@+id/mediaFrame"
+        android:name="com.bravson.socialalert.android.MediaFrameFragment_"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" >
-
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="fitCenter"
-            android:src="@android:drawable/alert_light_frame" />
-
-        <VideoView
-            android:id="@+id/videoView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="fitCenter"
-            android:visibility="invisible" />
-    </FrameLayout>
+        android:layout_weight="1" />
 
     <LinearLayout
         android:layout_margin="8dp"
