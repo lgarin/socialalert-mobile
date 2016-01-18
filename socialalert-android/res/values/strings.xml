@@ -35,7 +35,7 @@
     <string name="passwordHint">password</string>
     <string name="forgetPasswordText">Forget password?</string>
     <string name="loadingDataMessage">Loading please wait.....</string>
-    <string name="unknownErrorMessage">An unknown error occured!</string>
+    <string name="unknownErrorMessage">An unknown error occurred!</string>
     <string name="titleHint">Title</string>
     <string name="tagsHint">Tags</string>
     <string name="descriptionHint">Description</string>

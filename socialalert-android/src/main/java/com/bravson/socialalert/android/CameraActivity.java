@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.concurrent.Semaphore;
 
-import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
@@ -29,7 +28,6 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
-import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
@@ -37,7 +35,6 @@ import android.media.ImageReader.OnImageAvailableListener;
 import android.media.MediaRecorder;
 import android.support.annotation.NonNull;
 import android.support.annotation.UiThread;
-import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.SurfaceView;
@@ -284,6 +281,7 @@ public class CameraActivity extends Activity {
     			captureBuilder.addTarget(imageReader.getSurface());
                 captureBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
                 captureBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation());
 				captureSession.stopRepeating();
 				captureSession.capture(captureBuilder.build(), null, null);
 			} catch (CameraAccessException e) {
@@ -292,6 +290,30 @@ public class CameraActivity extends Activity {
 			}
 		}
 	}
+	
+	private int getJpegOrientation() throws CameraAccessException {
+		CameraCharacteristics c = cameraManager.getCameraCharacteristics(cameraDevice.getId());
+		int deviceOrientation = getWindowManager().getDefaultDisplay().getRotation();
+		if (deviceOrientation == android.view.OrientationEventListener.ORIENTATION_UNKNOWN)
+			return 0;
+		int sensorOrientation = c.get(CameraCharacteristics.SENSOR_ORIENTATION);
+
+		// Round device orientation to a multiple of 90
+		deviceOrientation = (deviceOrientation + 45) / 90 * 90;
+
+		// Reverse device orientation for front-facing cameras
+		boolean facingFront = c.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT;
+		if (facingFront)
+			deviceOrientation = -deviceOrientation;
+
+		// Calculate desired JPEG orientation relative to camera orientation to
+		// make
+		// the image upright relative to the device orientation
+		int jpegOrientation = (sensorOrientation + deviceOrientation + 360) % 360;
+
+		return jpegOrientation;
+	}
+
 	
 	/*
 	static class ImageCaptureCallback extends android.hardware.camera2.CameraCaptureSession.CaptureCallback {
