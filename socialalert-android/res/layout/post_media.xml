@@ -4,13 +4,29 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.bravson.socialalert.android.PostMediaActivity">
-
-    <fragment
-        android:id="@+id/mediaFrame"
-        android:name="com.bravson.socialalert.android.MediaFrameFragment_"
+    
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="wrap_content"
+        android:layout_weight="1" >
+
+        <fragment
+	        android:id="@+id/mediaFrame"
+	        android:name="com.bravson.socialalert.android.MediaFrameFragment_"
+	        android:layout_width="match_parent"
+	        android:layout_height="fill_parent"
+	        android:layout_weight="1" />
+
+        <fragment android:id="@+id/mediaCategory"
+            android:name="com.bravson.socialalert.android.MediaCategoryFragment_"
+            android:layout_width="fill_parent"
+    		android:layout_height="40dp"
+            android:layout_alignParentBottom="true"
+    		android:layout_alignParentLeft="true"
+    		android:alpha="100"
+    		android:background="#80000000"/>
+
+    </RelativeLayout>
 
     <EditText
         android:id="@+id/titleView"
@@ -30,7 +46,7 @@
     </EditText>
 
     <EditText
-        android:id="@+id/descirptionView"
+        android:id="@+id/descriptionView"
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:ems="10"

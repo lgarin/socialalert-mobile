@@ -23,19 +23,10 @@ import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.googlecode.jsonrpc4j.JsonRpcClient;
 
 @EBean(scope = Scope.Singleton)
-public class JsonRpcConnection {
+public class JsonRpcConnection extends ServerConnection {
 	@StringRes
 	String baseServerUrl;
 	
-	@IntegerRes
-	int connectionTimeoutMillis;
-	
-	@IntegerRes
-	int readTimeoutMillis;
-	
-	private Proxy connectionProxy = Proxy.NO_PROXY;
-	private SSLContext sslContext = null;
-	private HostnameVerifier hostNameVerifier = null;
 	private String cookie;	
 	private JsonRpcClient client;
 	
@@ -44,41 +35,6 @@ public class JsonRpcConnection {
 		client = new JsonRpcClient();
 		client.getObjectMapper().registerModule(new JodaModule());
 		client.setExceptionResolver(new JsonClientExceptionResolver());
-	}
-
-	private HttpURLConnection prepareConnection(URL serviceUrl) throws IOException {
-
-		// create URLConnection
-		HttpURLConnection con = (HttpURLConnection) serviceUrl.openConnection(connectionProxy);
-		con.setConnectTimeout(connectionTimeoutMillis);
-		con.setReadTimeout(readTimeoutMillis);
-		con.setAllowUserInteraction(false);
-		con.setDefaultUseCaches(false);
-		con.setDoInput(true);
-		con.setDoOutput(true);
-		con.setUseCaches(false);
-		con.setInstanceFollowRedirects(true);
-		con.setRequestMethod("POST");
-
-		// do stuff for ssl
-		if (HttpsURLConnection.class.isInstance(con)) {
-			HttpsURLConnection https = HttpsURLConnection.class.cast(con);
-			if (hostNameVerifier != null) {
-				https.setHostnameVerifier(hostNameVerifier);
-			}
-			if (sslContext != null) {
-				https.setSSLSocketFactory(sslContext.getSocketFactory());
-			}
-		}
-
-		// init HTTP properites
-		if (cookie != null) {
-			con.setRequestProperty("cookie", cookie);
-		}
-		con.setRequestProperty("Content-Type", "application/json-rpc");
-
-		// return it
-		return con;
 	}
 
 	private static String extractCookie(HttpURLConnection con) {
@@ -97,30 +53,48 @@ public class JsonRpcConnection {
 	@SupposeBackground
 	public Object invoke(String methodName, Object argument, Type returnType, String servicePath) throws Throwable {
 
-		// create URLConnection
-		HttpURLConnection con = prepareConnection(new URL(baseServerUrl + "/" + servicePath));
+		HttpURLConnection con = createHttpPost(new URL(baseServerUrl + "/" + servicePath));
+		initRequestProperties(con);
+		
 		con.connect();
-
-		// invoke it
-		OutputStream ops = con.getOutputStream();
 		try {
-			client.invoke(methodName, argument, ops);
+			invokeMethod(methodName, argument, con);
+			storeCookie(con);
+			return readResponse(returnType, con);
 		} finally {
-			ops.close();
+			con.disconnect();
 		}
+	}
 
-		// store session id
-		String newCookie = extractCookie(con);
-		if (newCookie != null) {
-			cookie = newCookie;
+	void initRequestProperties(HttpURLConnection con) {
+		if (cookie != null) {
+			con.setRequestProperty("cookie", cookie);
 		}
+		con.setRequestProperty("Content-Type", "application/json-rpc");
+	}
 
-		// read and return value
+	Object readResponse(Type returnType, HttpURLConnection con) throws IOException, Throwable {
 		InputStream ips = con.getInputStream();
 		try {
 			return client.readResponse(returnType, ips);
 		} finally {
 			ips.close();
+		}
+	}
+
+	void storeCookie(HttpURLConnection con) {
+		String newCookie = extractCookie(con);
+		if (newCookie != null) {
+			cookie = newCookie;
+		}
+	}
+
+	void invokeMethod(String methodName, Object argument, HttpURLConnection con) throws IOException {
+		OutputStream ops = con.getOutputStream();
+		try {
+			client.invoke(methodName, argument, ops);
+		} finally {
+			ops.close();
 		}
 	}
 }

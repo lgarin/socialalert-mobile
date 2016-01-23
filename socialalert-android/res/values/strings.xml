@@ -23,6 +23,7 @@
     <string name="baseServerUrl">http://jcla3ndtozbxyghx.myfritz.net:18789/socialalert-app/rest</string>
     <string name="baseThumbnailUrl">http://jcla3ndtozbxyghx.myfritz.net:18789/socialalert-app/thumbnail</string>
     <string name="basePreviewUrl">http://jcla3ndtozbxyghx.myfritz.net:18789/socialalert-app/preview</string>
+    <string name="baseUploadUrl">http://jcla3ndtozbxyghx.myfritz.net:18789/socialalert-app/upload</string>
 
     <integer name="connectionTimeoutMillis">5000</integer>
     <integer name="readTimeoutMillis">10000</integer>
