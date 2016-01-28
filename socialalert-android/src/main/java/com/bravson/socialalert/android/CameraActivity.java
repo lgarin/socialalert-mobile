@@ -11,11 +11,15 @@ import java.util.Comparator;
 import java.util.concurrent.Semaphore;
 
 import org.androidannotations.annotations.Background;
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.FragmentById;
 import org.androidannotations.annotations.SystemService;
 import org.androidannotations.annotations.ViewById;
+
+import com.bravson.socialalert.android.service.CameraService;
+import com.bravson.socialalert.android.service.CameraStateCallback;
 
 import android.Manifest;
 import android.app.Activity;
@@ -38,11 +42,12 @@ import android.support.annotation.UiThread;
 import android.util.Size;
 import android.view.Surface;
 import android.view.SurfaceView;
+import android.widget.Toast;
 
 @EActivity(R.layout.camera)
 public class CameraActivity extends Activity {
 
-	private static final int REQUEST_CAMERA_PERMISSION = 1;
+	private static final int REQUEST_PERMISSION_CODE = 1;
 	
 	@ViewById(R.id.cameraSurface)
 	SurfaceView cameraSurface;
@@ -53,34 +58,37 @@ public class CameraActivity extends Activity {
 	@SystemService
 	CameraManager cameraManager;
 	
-	CameraDevice cameraDevice;
-	
 	CameraCaptureSession captureSession;
+	
+	@Bean
+	CameraService cameraService;
 	
 	ImageReader imageReader;
 	
 	MediaRecorder mediaRecorder;
 	
-	private Semaphore cameraOpenCloseLock = new Semaphore(1);
-	
 	void initCameraDevice() {
 		if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-	         requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+	         requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_PERMISSION_CODE);
 	         return;
 	    }
 
 		try {
-			cameraManager.openCamera(findBestCameraId(), new CameraCallback(), null);
+			cameraService.initCameraDevice(new CameraCallback());
 		} catch (CameraAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			showErrorAndFinish(e);
 		}
 	}
 	
+	@UiThread
+	void showErrorAndFinish(CameraAccessException e) {
+		// TODO Auto-generated method stub
+		Toast.makeText(this, "No camera access", Toast.LENGTH_LONG).show();
+		finish();
+	}
+
 	private void initImageReader(String cameraId) throws CameraAccessException {
-		CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraId);
-		StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-		Size largest = Collections.max(Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)), new CompareSizesByArea());
+		Size largest = cameraService.getLargetPictureSize();
 		imageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(), ImageFormat.JPEG, 2);
 		imageReader.setOnImageAvailableListener(new ImageAvailableListener(), null);
 	}
@@ -94,7 +102,7 @@ public class CameraActivity extends Activity {
 	
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-    	if (requestCode == REQUEST_CAMERA_PERMISSION && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+    	if (requestCode == REQUEST_PERMISSION_CODE && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
     		initCameraDevice();
     	} else {
     		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -150,41 +158,13 @@ public class CameraActivity extends Activity {
 			captureSession = null;
 		}
 		
-		if (cameraDevice != null) {
-			closeCameraDevice();
-		}
+		cameraService.close();
 		
 		super.onPause();
 	}
 
-	void closeCameraDevice() {
-		try {
-			cameraOpenCloseLock.acquire();
-			cameraDevice.close();
-			cameraDevice = null;
-		} catch (InterruptedException e) {
-		} finally {
-			cameraOpenCloseLock.release();
-		}
-	}
-	
-	private String findBestCameraId() throws CameraAccessException {
-		String firstCameraId = null;
-		for (String cameraId : cameraManager.getCameraIdList()) {
-			if (firstCameraId == null) {
-				firstCameraId = cameraId;
-			}
-			CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraId);
-			Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
-			Boolean flash = characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
-            if (facing.intValue() == CameraCharacteristics.LENS_FACING_FRONT && flash.booleanValue()) {
-				return cameraId;
-			}
-		}
-		return firstCameraId;
-	}
-	
-	void initCameraSession() {
+
+	void initCameraSession(CameraDevice cameraDevice) {
 		try {
 			initCameraSurface();
 			initImageReader(cameraDevice.getId());
@@ -207,30 +187,15 @@ public class CameraActivity extends Activity {
 		cameraSurface.getHolder().setFixedSize(cameraSurface.getWidth(), cameraSurface.getHeight());
 	}
 
-	private class CameraCallback extends CameraDevice.StateCallback {
-		@Override
-		public void onDisconnected(CameraDevice camera) {
-			cameraOpenCloseLock.release();
-			camera.close();
-			cameraDevice = null;
-			cameraSurface.setVisibility(SurfaceView.INVISIBLE);
+	private class CameraCallback implements CameraStateCallback {
+		 @Override
+		public void onError(CameraAccessException exception) {
+			 showErrorAndFinish(exception);
 		}
 		
-		@Override
-		public void onError(CameraDevice camera, int error) {
-			cameraOpenCloseLock.release();
-			camera.close();
-			cameraDevice = null;
-			cameraSurface.setVisibility(SurfaceView.INVISIBLE);
-			// TODO show error
-			finish();
-		}
-		
-		@Override
-		public void onOpened(CameraDevice camera) {
-			cameraOpenCloseLock.release();
-			cameraDevice = camera;
-			initCameraSession();
+		 @Override
+		public void onReady(CameraDevice camera) {
+			 initCameraSession(camera);
 		}
 	}
 	
@@ -238,89 +203,35 @@ public class CameraActivity extends Activity {
 
 		@Override
 		public void onConfigured(CameraCaptureSession session) {
-			if (cameraDevice == null) {
+			if (!cameraService.isReady()) {
 				return;
 			}
 			
 			try {
 				captureSession = session;
-				CaptureRequest.Builder requestBuilder = session.getDevice().createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-				requestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-				requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-				requestBuilder.addTarget(cameraSurface.getHolder().getSurface());
-				
-				session.setRepeatingRequest(requestBuilder.build(), null, null);
-				
+				CaptureRequest request = cameraService.createPreviewCaptureRequest(cameraSurface.getHolder());
+				session.setRepeatingRequest(request, null, null);
 			} catch (CameraAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				showErrorAndFinish(e);
 			}
 		}
 
 		@Override
 		public void onConfigureFailed(CameraCaptureSession session) {
-			// TODO Auto-generated method stub
 			captureSession = null;
 		}
 	}
-	
-	static class CompareSizesByArea implements Comparator<Size> {
-
-        @Override
-        public int compare(Size lhs, Size rhs) {
-            // We cast here to ensure the multiplications won't overflow
-            return Long.signum((long) lhs.getWidth() * lhs.getHeight() - (long) rhs.getWidth() * rhs.getHeight());
-        }
-    }
 	
 	@Click(R.id.recordButton)
 	void onRecordClick() {
 		if (captureSession != null) {
             try {
-            	CaptureRequest.Builder captureBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-    			captureBuilder.addTarget(imageReader.getSurface());
-                captureBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-                captureBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-                captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation());
+                CaptureRequest request = cameraService.createStillImageRequest(imageReader.getSurface(), null);
 				captureSession.stopRepeating();
-				captureSession.capture(captureBuilder.build(), null, null);
+				captureSession.capture(request, null, null);
 			} catch (CameraAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				showErrorAndFinish(e);
 			}
 		}
 	}
-	
-	private int getJpegOrientation() throws CameraAccessException {
-		CameraCharacteristics c = cameraManager.getCameraCharacteristics(cameraDevice.getId());
-		int deviceOrientation = getWindowManager().getDefaultDisplay().getRotation();
-		if (deviceOrientation == android.view.OrientationEventListener.ORIENTATION_UNKNOWN)
-			return 0;
-		int sensorOrientation = c.get(CameraCharacteristics.SENSOR_ORIENTATION);
-
-		// Round device orientation to a multiple of 90
-		deviceOrientation = (deviceOrientation + 45) / 90 * 90;
-
-		// Reverse device orientation for front-facing cameras
-		boolean facingFront = c.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT;
-		if (facingFront)
-			deviceOrientation = -deviceOrientation;
-
-		// Calculate desired JPEG orientation relative to camera orientation to
-		// make
-		// the image upright relative to the device orientation
-		int jpegOrientation = (sensorOrientation + deviceOrientation + 360) % 360;
-
-		return jpegOrientation;
-	}
-
-	
-	/*
-	static class ImageCaptureCallback extends android.hardware.camera2.CameraCaptureSession.CaptureCallback {
-		@Override
-		public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
-			
-		}
-	}
-	*/
 }
