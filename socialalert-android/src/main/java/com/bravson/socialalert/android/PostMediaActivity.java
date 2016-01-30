@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
@@ -17,21 +16,24 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.apache.commons.lang3.StringUtils;
 
+import com.bravson.socialalert.android.service.LocationService;
 import com.bravson.socialalert.android.service.MediaUploadConnection;
 import com.bravson.socialalert.android.service.RpcBlockingCall;
+import com.bravson.socialalert.common.domain.GeoAddress;
 import com.bravson.socialalert.common.domain.MediaCategory;
 import com.bravson.socialalert.common.domain.MediaConstants;
 import com.bravson.socialalert.common.domain.MediaInfo;
 import com.bravson.socialalert.common.domain.MediaType;
-import com.bravson.socialalert.common.domain.UserInfo;
 import com.bravson.socialalert.common.facade.MediaFacade;
-import com.bravson.socialalert.common.facade.UserFacade;
 import com.mobsandgeeks.saripaar.annotation.NotEmpty;
 import com.mobsandgeeks.saripaar.annotation.Order;
 
 import android.content.Intent;
+import android.location.Address;
+import android.location.Location;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 @EActivity(R.layout.post_media)
 public class PostMediaActivity extends ValidatedActivity {
@@ -39,22 +41,28 @@ public class PostMediaActivity extends ValidatedActivity {
 	@ViewById(R.id.titleView)
 	@NotEmpty
 	@Order(1)
-	EditText title;
+	EditText titleView;
 	
 	@ViewById(R.id.descriptionView)
-	EditText description;
+	EditText descriptionView;
 	
 	@ViewById(R.id.tagsView)
-	EditText tags;
+	EditText tagsView;
 	
 	@ViewById(R.id.publishButton)
 	Button publishButton;
+	
+	@ViewById(R.id.addressView)
+	TextView addressView;
 	
 	@Extra("imageFile")
 	File imageFile;
 	
 	@Extra("videoFile")
 	File videoFile;
+	
+	@Extra("location")
+	Location location;
 	
 	@FragmentById(R.id.mediaFrame)
 	MediaFrameFragment mediaFrame;
@@ -66,13 +74,22 @@ public class PostMediaActivity extends ValidatedActivity {
 	MediaUploadConnection uploadConnection;
 	
 	@Bean
+	LocationService locationService;
+	
+	@Bean
 	RpcBlockingCall rpc;
 	
 	private URI mediaUri;
 	
+	private volatile Address address;
+	
 	@Override
 	protected void onResume() {
 		super.onResume();
+		
+		if (location != null) {
+			asyncSearchLocality(location);
+		}
 		
 		if (imageFile != null) {
 			mediaFrame.showLocalMedia(MediaType.PICTURE, imageFile);
@@ -82,6 +99,23 @@ public class PostMediaActivity extends ValidatedActivity {
 			startUpload(videoFile, MediaConstants.MP4_MEDIA_TYPE);
 		}
 		publishButton.setEnabled(false);
+	}
+	
+	@Background
+	void asyncSearchLocality(Location location) {
+		try {
+			address = locationService.getAddress(location);
+			if (address != null) {
+				asyncDisplayAddress(address);
+			}
+		} catch (IOException e) {
+			// ignore
+		}
+	}
+	
+	@UiThread
+	void asyncDisplayAddress(Address address) {
+		addressView.setText(address.getLocality() + " - " + address.getCountryName());
 	}
 	
 	@Background
@@ -108,11 +142,24 @@ public class PostMediaActivity extends ValidatedActivity {
 	void onPublish() {
 		if (validate() && mediaUri != null) {
 			if (imageFile != null) {
-				asyncClaimPicture(mediaUri, title.getText().toString(), description.getText().toString(), mediaCategory.getSelectedCategory(), tags.getText().toString());
+				asyncClaimPicture(mediaUri, titleView.getText().toString(), descriptionView.getText().toString(), mediaCategory.getSelectedCategory(), tagsView.getText().toString());
 			} else if (videoFile != null) {
 				// TODO
 			}
 		}
+	}
+	
+	private GeoAddress buildGeoAddress() {
+		if (address == null) {
+			return null;
+		}
+		GeoAddress result = new GeoAddress();
+		result.setCountry(address.getCountryCode());
+		result.setLocality(address.getLocality());
+		result.setFormattedAddress(address.toString());
+		result.setLatitude(address.getLatitude());
+		result.setLongitude(address.getLongitude());
+		return result;
 	}
 	
 	@Background
@@ -122,7 +169,7 @@ public class PostMediaActivity extends ValidatedActivity {
 			if (categoryIndex != null) {
 				categories.add(MediaCategory.values()[categoryIndex]);
 			}
-			MediaInfo info = rpc.with(MediaFacade.class).claimPicture(mediaUri, title, null, categories, Arrays.asList(StringUtils.split(tags)));
+			MediaInfo info = rpc.with(MediaFacade.class).claimPicture(mediaUri, title, buildGeoAddress(), categories, Arrays.asList(StringUtils.split(tags)));
 			asyncShowSuccess(info);
 		} catch (Exception e) {
 			//TODO

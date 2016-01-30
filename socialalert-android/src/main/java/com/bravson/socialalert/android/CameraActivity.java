@@ -5,10 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.concurrent.Semaphore;
 
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
@@ -20,6 +16,7 @@ import org.androidannotations.annotations.ViewById;
 
 import com.bravson.socialalert.android.service.CameraService;
 import com.bravson.socialalert.android.service.CameraStateCallback;
+import com.bravson.socialalert.android.service.LocationService;
 
 import android.Manifest;
 import android.app.Activity;
@@ -28,11 +25,10 @@ import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
-import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
-import android.hardware.camera2.params.StreamConfigurationMap;
+import android.location.Location;
 import android.media.Image;
 import android.media.ImageReader;
 import android.media.ImageReader.OnImageAvailableListener;
@@ -55,24 +51,29 @@ public class CameraActivity extends Activity {
 	@FragmentById(R.id.mediaCategory)
 	MediaCategoryFragment mediaCategory;
 	
-	@SystemService
-	CameraManager cameraManager;
-	
 	CameraCaptureSession captureSession;
 	
 	@Bean
 	CameraService cameraService;
 	
+	@Bean
+	LocationService locationService;
+	
 	ImageReader imageReader;
 	
 	MediaRecorder mediaRecorder;
+
+	private volatile Location location;
 	
-	void initCameraDevice() {
-		if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-	         requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_PERMISSION_CODE);
+	@UiThread
+	void initServices() {
+		if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED || checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+	         requestPermissions(new String[]{Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_PERMISSION_CODE);
 	         return;
 	    }
 
+		locationService.requestLocationUpdate();
+		
 		try {
 			cameraService.initCameraDevice(new CameraCallback());
 		} catch (CameraAccessException e) {
@@ -82,7 +83,6 @@ public class CameraActivity extends Activity {
 	
 	@UiThread
 	void showErrorAndFinish(CameraAccessException e) {
-		// TODO Auto-generated method stub
 		Toast.makeText(this, "No camera access", Toast.LENGTH_LONG).show();
 		finish();
 	}
@@ -102,8 +102,8 @@ public class CameraActivity extends Activity {
 	
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-    	if (requestCode == REQUEST_PERMISSION_CODE && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-    		initCameraDevice();
+    	if (requestCode == REQUEST_PERMISSION_CODE && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+    		initServices();
     	} else {
     		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     	}
@@ -137,13 +137,13 @@ public class CameraActivity extends Activity {
     
     @UiThread
     void startPost(File file) {
-    	startActivity(new Intent(this, PostMediaActivity_.class).putExtra("imageFile", file));
+    	startActivity(new Intent(this, PostMediaActivity_.class).putExtra("imageFile", file).putExtra("location", location));
     }
     
     @Override
     protected void onResume() {
     	super.onResume();
-    	initCameraDevice();
+    	initServices();
     }
 	
 	@Override
@@ -178,8 +178,7 @@ public class CameraActivity extends Activity {
 			}
 			cameraDevice.createCaptureSession(surfaces, new CameraActivity.CaptureCallback(), null);
 		} catch (CameraAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			showErrorAndFinish(e);
 		}
 	}
 
@@ -226,7 +225,8 @@ public class CameraActivity extends Activity {
 	void onRecordClick() {
 		if (captureSession != null) {
             try {
-                CaptureRequest request = cameraService.createStillImageRequest(imageReader.getSurface(), null);
+                location = locationService.getCurrentLocation();
+				CaptureRequest request = cameraService.createStillImageRequest(imageReader.getSurface(), location);
 				captureSession.stopRepeating();
 				captureSession.capture(request, null, null);
 			} catch (CameraAccessException e) {
