@@ -61,11 +61,14 @@ public class MediaFrameFragment extends Fragment {
 			videoView.setVideoURI(Uri.fromFile(mediaFile));
 			videoView.setVisibility(View.VISIBLE);
 			imageView.setVisibility(View.INVISIBLE);
+			videoView.start();
 		} else if (type == MediaType.PICTURE) {
 			imageView.setImageURI(Uri.fromFile(mediaFile));
+			videoView.stopPlayback();
 			videoView.setVisibility(View.INVISIBLE);
 			imageView.setVisibility(View.VISIBLE);
 		} else {
+			videoView.stopPlayback();
 			videoView.setVisibility(View.INVISIBLE);
 			imageView.setVisibility(View.INVISIBLE);
 		}

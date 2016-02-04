@@ -20,6 +20,8 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.location.Location;
+import android.media.ImageReader;
+import android.media.MediaRecorder;
 import android.util.Size;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -121,7 +123,23 @@ public class CameraService implements AutoCloseable {
 		requestBuilder.addTarget(target);
 		requestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
 		requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-		requestBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation(cameraDevice.getId()));
+		requestBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation());
+        if (location != null) {
+        	requestBuilder.set(CaptureRequest.JPEG_GPS_LOCATION, location);
+        }
+        
+		return requestBuilder.build();
+	}
+	
+	public CaptureRequest createRecordVideoRequest(SurfaceHolder previewTarget, Surface target, Location location) throws CameraAccessException {
+		CameraDevice cameraDevice = getCameraDevice();
+		
+		CaptureRequest.Builder requestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
+		requestBuilder.addTarget(target);
+		requestBuilder.addTarget(previewTarget.getSurface());
+		requestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+		requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+		requestBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation());
         if (location != null) {
         	requestBuilder.set(CaptureRequest.JPEG_GPS_LOCATION, location);
         }
@@ -139,8 +157,8 @@ public class CameraService implements AutoCloseable {
 		return requestBuilder.build();
 	}
 	
-	private int getJpegOrientation(String cameraId) throws CameraAccessException {
-		CameraCharacteristics c = cameraManager.getCameraCharacteristics(cameraId);
+	public int getJpegOrientation() throws CameraAccessException {
+		CameraCharacteristics c = cameraManager.getCameraCharacteristics(getCameraDevice().getId());
 		int deviceOrientation = activity.getWindowManager().getDefaultDisplay().getRotation();
 		
 		if (deviceOrientation == android.view.OrientationEventListener.ORIENTATION_UNKNOWN)
@@ -165,14 +183,21 @@ public class CameraService implements AutoCloseable {
 		return currentCameraDevice.get() != null && !closing.get();
 	}
 	
-	public Size getLargetPictureSize() throws CameraAccessException {
+	public Size getLargetImageSize() throws CameraAccessException {
 		CameraDevice cameraDevice = getCameraDevice();
 		CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraDevice.getId());
 		StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 		return Collections.max(Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)), new CompareSizesByArea());
 	}
+	
+	public Size getLargetVideoSize() throws CameraAccessException {
+		CameraDevice cameraDevice = getCameraDevice();
+		CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraDevice.getId());
+		StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+		return Collections.max(Arrays.asList(map.getHighSpeedVideoSizes()), new CompareSizesByArea());
+	}
 
-	CameraDevice getCameraDevice() throws CameraAccessException {
+	public CameraDevice getCameraDevice() throws CameraAccessException {
 		CameraDevice cameraDevice = currentCameraDevice.get();
 		if (cameraDevice == null) {
 			throw new CameraAccessException(CameraAccessException.CAMERA_DISCONNECTED);
@@ -188,5 +213,4 @@ public class CameraService implements AutoCloseable {
             return Long.signum((long) lhs.getWidth() * lhs.getHeight() - (long) rhs.getWidth() * rhs.getHeight());
         }
     }
-	
 }

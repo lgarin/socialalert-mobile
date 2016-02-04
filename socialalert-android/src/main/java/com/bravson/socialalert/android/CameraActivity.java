@@ -12,11 +12,14 @@ import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.FragmentById;
 import org.androidannotations.annotations.SystemService;
+import org.androidannotations.annotations.Touch;
 import org.androidannotations.annotations.ViewById;
+import org.androidannotations.api.BackgroundExecutor;
 
 import com.bravson.socialalert.android.service.CameraService;
 import com.bravson.socialalert.android.service.CameraStateCallback;
 import com.bravson.socialalert.android.service.LocationService;
+import com.bravson.socialalert.common.domain.MediaType;
 
 import android.Manifest;
 import android.app.Activity;
@@ -35,15 +38,29 @@ import android.media.ImageReader.OnImageAvailableListener;
 import android.media.MediaRecorder;
 import android.support.annotation.NonNull;
 import android.support.annotation.UiThread;
+import android.support.v13.app.FragmentCompat;
 import android.util.Size;
 import android.view.Surface;
 import android.view.SurfaceView;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 @EActivity(R.layout.camera)
 public class CameraActivity extends Activity {
 
 	private static final int REQUEST_PERMISSION_CODE = 1;
+	
+	private static final String[] REQUIRED_PERMISSIONS = {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_FINE_LOCATION};
+	
+	@ViewById(R.id.photoButton)
+	ImageButton photoButton;
+	
+	@ViewById(R.id.videoButton)
+	ImageButton videoButton;
+	
+	@ViewById(R.id.recordButton)
+	ImageButton recordButton;
 	
 	@ViewById(R.id.cameraSurface)
 	SurfaceView cameraSurface;
@@ -65,12 +82,16 @@ public class CameraActivity extends Activity {
 
 	private volatile Location location;
 	
+	private volatile boolean videoMode;
+	
 	@UiThread
 	void initServices() {
-		if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED || checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-	         requestPermissions(new String[]{Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_PERMISSION_CODE);
-	         return;
-	    }
+		for (String permission : REQUIRED_PERMISSIONS) {
+			if (checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
+				requestPermissions(REQUIRED_PERMISSIONS, REQUEST_PERMISSION_CODE);
+				return;
+			}
+		}
 
 		locationService.requestLocationUpdate();
 		
@@ -82,32 +103,23 @@ public class CameraActivity extends Activity {
 	}
 	
 	@UiThread
-	void showErrorAndFinish(CameraAccessException e) {
+	void showErrorAndFinish(Exception e) {
 		Toast.makeText(this, "No camera access", Toast.LENGTH_LONG).show();
 		finish();
 	}
 
-	private void initImageReader(String cameraId) throws CameraAccessException {
-		Size largest = cameraService.getLargetPictureSize();
-		imageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(), ImageFormat.JPEG, 2);
+	private void initImageReader() throws CameraAccessException {
+		Size size = cameraService.getLargetImageSize();
+		imageReader = ImageReader.newInstance(size.getWidth(), size.getHeight(), ImageFormat.JPEG, 2);
 		imageReader.setOnImageAvailableListener(new ImageAvailableListener(), null);
 	}
 	
 	class ImageAvailableListener implements OnImageAvailableListener {
 		
 		public void onImageAvailable(ImageReader reader) {
-			saveImage(reader.acquireNextImage(), new File(getFilesDir(), "test.jpg"));
+			saveImage(reader.acquireNextImage(), getTemporaryFile(MediaType.PICTURE));
 		}
 	};
-	
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-    	if (requestCode == REQUEST_PERMISSION_CODE && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-    		initServices();
-    	} else {
-    		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    	}
-    }
     
     private void writeBuffer(ByteBuffer buffer, File file) throws IOException {
     	FileOutputStream output = openFileOutput(file.getName(), MODE_PRIVATE);
@@ -132,42 +144,61 @@ public class CameraActivity extends Activity {
         	image.close();
         }
         
-        startPost(file);
+        startPost(MediaType.PICTURE);
     }
     
     @UiThread
-    void startPost(File file) {
-    	startActivity(new Intent(this, PostMediaActivity_.class).putExtra("imageFile", file).putExtra("location", location));
+    void startPost(MediaType mediaType) {
+    	String fileParameterName = mediaType == MediaType.PICTURE ? "imageFile" : "videoFile";
+    	File file = getTemporaryFile(mediaType);
+    	finish();
+    	startActivity(new Intent(this, PostMediaActivity_.class).putExtra(fileParameterName, file).putExtra("location", location));
     }
     
     @Override
     protected void onResume() {
     	super.onResume();
+    	photoButton.setSelected(true);
     	initServices();
     }
 	
 	@Override
 	protected void onPause() {
-		if (imageReader != null) {
-			imageReader.close();
-			imageReader = null;
-		}
-		
-		if (captureSession != null) {
-			captureSession.close();
-			captureSession = null;
-		}
+		closeCameraSession();
 		
 		cameraService.close();
 		
 		super.onPause();
 	}
 
+	void closeCameraSession() {
+		if (imageReader != null) {
+			imageReader.close();
+			imageReader = null;
+		}
+		
+		if (mediaRecorder != null) {
+			mediaRecorder.release();
+			mediaRecorder = null;
+		}
+		
+		if (captureSession != null) {
+			captureSession.close();
+			captureSession = null;
+		}
+	}
 
-	void initCameraSession(CameraDevice cameraDevice) {
+	@UiThread
+	void initCameraSession() {
 		try {
+			closeCameraSession();
+			
 			initCameraSurface();
-			initImageReader(cameraDevice.getId());
+			if (videoMode) {
+				initMediaRecorder();
+			} else {
+				initImageReader();
+			}
 			ArrayList<Surface> surfaces = new ArrayList<>();
 			surfaces.add(cameraSurface.getHolder().getSurface());
 			if (imageReader != null) {
@@ -176,8 +207,10 @@ public class CameraActivity extends Activity {
 			if (mediaRecorder != null) {
 				surfaces.add(mediaRecorder.getSurface());
 			}
-			cameraDevice.createCaptureSession(surfaces, new CameraActivity.CaptureCallback(), null);
+			cameraService.getCameraDevice().createCaptureSession(surfaces, new CameraActivity.CaptureCallback(), null);
 		} catch (CameraAccessException e) {
+			showErrorAndFinish(e);
+		} catch (IOException e) {
 			showErrorAndFinish(e);
 		}
 	}
@@ -185,6 +218,38 @@ public class CameraActivity extends Activity {
 	void initCameraSurface() {
 		cameraSurface.getHolder().setFixedSize(cameraSurface.getWidth(), cameraSurface.getHeight());
 	}
+	
+	private File getTemporaryFile(MediaType type) {
+		switch (type){
+		case PICTURE:
+			return new File(getFilesDir(), "test.jpg");
+		case VIDEO:
+			return new File(getFilesDir(), "test.mp4");
+		default:
+			throw new IllegalArgumentException("Unsupported media type " + type);
+		}
+	}
+	
+	void initMediaRecorder() throws CameraAccessException, IOException {
+		mediaRecorder = new MediaRecorder();
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        mediaRecorder.setOutputFile(getTemporaryFile(MediaType.VIDEO).getAbsolutePath());
+        mediaRecorder.setVideoEncodingBitRate(10000000);
+        mediaRecorder.setVideoFrameRate(30);
+        Size size = cameraService.getLargetVideoSize();
+        mediaRecorder.setVideoSize(size.getWidth(), size.getHeight());
+        mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+        mediaRecorder.setOrientationHint(cameraService.getJpegOrientation());
+        
+        location = locationService.getCurrentLocation();
+		if (location != null) {
+			mediaRecorder.setLocation((float) location.getLatitude(), (float) location.getLongitude());
+		}
+		mediaRecorder.prepare();
+    }
 
 	private class CameraCallback implements CameraStateCallback {
 		 @Override
@@ -194,7 +259,7 @@ public class CameraActivity extends Activity {
 		
 		 @Override
 		public void onReady(CameraDevice camera) {
-			 initCameraSession(camera);
+			 initCameraSession();
 		}
 	}
 	
@@ -224,14 +289,62 @@ public class CameraActivity extends Activity {
 	@Click(R.id.recordButton)
 	void onRecordClick() {
 		if (captureSession != null) {
+			videoButton.setEnabled(false);
+			photoButton.setEnabled(false);
             try {
-                location = locationService.getCurrentLocation();
-				CaptureRequest request = cameraService.createStillImageRequest(imageReader.getSurface(), location);
-				captureSession.stopRepeating();
-				captureSession.capture(request, null, null);
+            	if (photoButton.isSelected()) {
+            		capturePhoto();
+            	} else if (recordButton.isSelected()){
+            		recordButton.setSelected(false);
+            		stopVideo();
+            	} else {
+            		startVideo();
+            		recordButton.setSelected(true);
+            	}
 			} catch (CameraAccessException e) {
 				showErrorAndFinish(e);
 			}
 		}
+	}
+
+	void capturePhoto() throws CameraAccessException {
+		location = locationService.getCurrentLocation();
+		CaptureRequest request = cameraService.createStillImageRequest(imageReader.getSurface(), location);
+		captureSession.stopRepeating();
+		captureSession.capture(request, null, null);
+	}
+	
+	void startVideo() throws CameraAccessException {
+		CaptureRequest request = cameraService.createRecordVideoRequest(cameraSurface.getHolder(), mediaRecorder.getSurface(), location);
+		captureSession.stopRepeating();
+		captureSession.setRepeatingRequest(request, null, null);
+		mediaRecorder.start();
+	}
+	
+	void stopVideo() {
+		mediaRecorder.stop();
+		startPost(MediaType.VIDEO);
+	}
+	
+	private void changeCaptureMode(boolean newVideoMode) {
+		if (videoMode == newVideoMode) {
+			return;
+		}
+		photoButton.setSelected(!newVideoMode);
+		videoButton.setSelected(newVideoMode);
+		videoMode = newVideoMode;
+		if (cameraService.isReady()) {
+			initCameraSession();
+		}
+	}
+	
+	@Touch(R.id.photoButton)
+	void onPhotoClick() {
+		changeCaptureMode(false);
+	}
+	
+	@Touch(R.id.videoButton)
+	void onVideoClick() {
+		changeCaptureMode(true);
 	}
 }

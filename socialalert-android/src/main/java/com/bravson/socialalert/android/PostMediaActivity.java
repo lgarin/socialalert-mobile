@@ -144,7 +144,7 @@ public class PostMediaActivity extends ValidatedActivity {
 			if (imageFile != null) {
 				asyncClaimPicture(mediaUri, titleView.getText().toString(), descriptionView.getText().toString(), mediaCategory.getSelectedCategory(), tagsView.getText().toString());
 			} else if (videoFile != null) {
-				// TODO
+				asyncClaimVideo(mediaUri, titleView.getText().toString(), descriptionView.getText().toString(), mediaCategory.getSelectedCategory(), tagsView.getText().toString());
 			}
 		}
 	}
@@ -170,6 +170,20 @@ public class PostMediaActivity extends ValidatedActivity {
 				categories.add(MediaCategory.values()[categoryIndex]);
 			}
 			MediaInfo info = rpc.with(MediaFacade.class).claimPicture(mediaUri, title, buildGeoAddress(), categories, Arrays.asList(StringUtils.split(tags)));
+			asyncShowSuccess(info);
+		} catch (Exception e) {
+			//TODO
+		}
+	}
+	
+	@Background
+	void asyncClaimVideo(URI mediaUri, String title, String description, Integer categoryIndex, String tags) {
+		try {
+			ArrayList<MediaCategory> categories = new ArrayList<MediaCategory>();
+			if (categoryIndex != null) {
+				categories.add(MediaCategory.values()[categoryIndex]);
+			}
+			MediaInfo info = rpc.with(MediaFacade.class).claimVideo(mediaUri, title, buildGeoAddress(), categories, Arrays.asList(StringUtils.split(tags)));
 			asyncShowSuccess(info);
 		} catch (Exception e) {
 			//TODO
