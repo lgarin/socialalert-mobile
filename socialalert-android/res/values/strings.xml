@@ -17,7 +17,7 @@
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
-    <string name="title_activity_login">Login</string>
+    <string name="title_activity_login">SNYPIX</string>
     <string name="title_activity_top_media">SNYPIX</string>
     <string name="signupText">Dont have an account? SIGNUP here.</string>
     <string name="baseServerUrl">http://jcla3ndtozbxyghx.myfritz.net:18789/socialalert-app/rest</string>

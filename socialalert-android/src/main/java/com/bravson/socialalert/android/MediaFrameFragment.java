@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 
+import org.androidannotations.annotations.AfterInject;
+import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.UiThread;
@@ -17,6 +19,8 @@ import com.bravson.socialalert.common.domain.MediaType;
 import android.app.Fragment;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
 import android.view.View;
 import android.widget.ImageView;
@@ -33,6 +37,17 @@ public class MediaFrameFragment extends Fragment {
 	
 	@StringRes
 	String basePreviewUrl;
+	
+	@AfterViews
+	void init() {
+		videoView.setOnPreparedListener(new OnPreparedListener() {
+	        @Override
+	        public void onPrepared(MediaPlayer mp) {
+	        	mp.setLooping(true);
+	            mp.setVolume(0, 0);
+	        }
+	    });
+	}
 	
 	void clearFrame() {
 		imageView.setImageURI(null);

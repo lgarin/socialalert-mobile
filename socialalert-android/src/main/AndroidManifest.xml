@@ -46,7 +46,7 @@
         android:name=".AndroidApp_"
         android:allowBackup="true"
         android:hardwareAccelerated="true"
-        android:icon="@drawable/app_sample_code"
+        android:icon="@drawable/ic_launcher"
         android:label="@string/title_activity_top_media" >
         <activity
             android:name=".LoginActivity_"

@@ -139,7 +139,7 @@ public class CameraService implements AutoCloseable {
 		requestBuilder.addTarget(previewTarget.getSurface());
 		requestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
 		requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-		requestBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation());
+		//requestBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation());
         if (location != null) {
         	requestBuilder.set(CaptureRequest.JPEG_GPS_LOCATION, location);
         }
