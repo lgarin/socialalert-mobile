@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.SystemService;
@@ -20,8 +19,6 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.location.Location;
-import android.media.ImageReader;
-import android.media.MediaRecorder;
 import android.util.Size;
 import android.view.Surface;
 import android.view.SurfaceHolder;

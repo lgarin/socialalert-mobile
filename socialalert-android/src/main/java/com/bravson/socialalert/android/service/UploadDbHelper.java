@@ -20,7 +20,10 @@ public class UploadDbHelper extends SQLiteOpenHelper {
     	    		UploadEntry.COLUMN_NAME_CATEGORY + " INTEGER, " +
     	    		UploadEntry.COLUMN_NAME_TITLE + " TEXT, " +
     	    		UploadEntry.COLUMN_NAME_DESCRIPTION + " TEXT, " +
-    	    		UploadEntry.COLUMN_NAME_TAGS + " TEXT " +
+    	    		UploadEntry.COLUMN_NAME_TAGS + " TEXT, " +
+    	    		UploadEntry.COLUMN_NAME_COUNTRY + " TEXT, " +
+    	    		UploadEntry.COLUMN_NAME_LOCALITY + " TEXT, " +
+    	    		UploadEntry.COLUMN_NAME_ADDRESS + " TEXT " +
     	    " )";
 
   	private static final String SQL_DELETE_ENTRIES =

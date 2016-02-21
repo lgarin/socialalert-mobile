@@ -5,18 +5,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
-import java.net.Proxy;
 import java.net.URL;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
 
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.EBean.Scope;
 import org.androidannotations.annotations.SupposeBackground;
-import org.androidannotations.annotations.res.IntegerRes;
 import org.androidannotations.annotations.res.StringRes;
 
 import com.fasterxml.jackson.datatype.joda.JodaModule;

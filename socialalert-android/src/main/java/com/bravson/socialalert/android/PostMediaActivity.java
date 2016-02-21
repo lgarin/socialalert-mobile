@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.bravson.socialalert.android.service.LocationService;
 import com.bravson.socialalert.android.service.MediaUploadConnection;
+import com.bravson.socialalert.android.service.ProgressListener;
 import com.bravson.socialalert.android.service.RpcBlockingCall;
 import com.bravson.socialalert.common.domain.GeoAddress;
 import com.bravson.socialalert.common.domain.MediaCategory;
@@ -31,6 +32,7 @@ import com.mobsandgeeks.saripaar.annotation.Order;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Location;
+import android.text.style.UpdateLayout;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -118,10 +120,20 @@ public class PostMediaActivity extends ValidatedActivity {
 		addressView.setText(address.getLocality() + " - " + address.getCountryName());
 	}
 	
+	private class UploadProgressListener implements ProgressListener {
+
+		@Override
+		public void onProgress(int maxProgress, int currentProgress) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
+	
 	@Background
 	void startUpload(File file, String mediaType) {
 		try {
-			String mediaUri = uploadConnection.upload(file, mediaType);
+			String mediaUri = uploadConnection.upload(file, mediaType, new UploadProgressListener());
 			if (mediaUri != null) {
 				enablePublish(URI.create(mediaUri));
 			} else {

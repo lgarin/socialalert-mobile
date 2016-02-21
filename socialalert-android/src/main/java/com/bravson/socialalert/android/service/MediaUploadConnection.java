@@ -13,6 +13,8 @@ import org.androidannotations.annotations.EBean.Scope;
 import org.androidannotations.annotations.SupposeBackground;
 import org.androidannotations.annotations.res.StringRes;
 
+import android.support.annotation.UiThread;
+
 @EBean(scope = Scope.Singleton)
 public class MediaUploadConnection extends ServerConnection {
 	
@@ -22,7 +24,7 @@ public class MediaUploadConnection extends ServerConnection {
     private static final int BUFFER_SIZE = 1024 * 1024;
 
 	@SupposeBackground
-	public String upload(File file, String contentType) throws Exception {
+	public String upload(File file, String contentType, ProgressListener progressListener) throws Exception {
 
 		// create URLConnection
 		HttpURLConnection conn = createHttpPost(new URL(baseUploadUrl));
@@ -32,7 +34,7 @@ public class MediaUploadConnection extends ServerConnection {
 		
         conn.connect();
 		try {
-			writeFile(conn, file);
+			writeFile(conn, file, progressListener);
 			int code = conn.getResponseCode();
 			if (code == HttpURLConnection.HTTP_CREATED) {
 				return conn.getHeaderField("Location");
@@ -42,18 +44,20 @@ public class MediaUploadConnection extends ServerConnection {
 			conn.disconnect();
 		}
 	}
-
-	private void writeFile(HttpURLConnection conn, File file) throws IOException {
+	
+	private void writeFile(HttpURLConnection conn, File file, ProgressListener progressListener) throws IOException {
 		OutputStream os = conn.getOutputStream();
 		try {
-			copy(file, os);
+			copy(file, os, progressListener);
 		} finally {
 			os.close();
 		}
 		
 	}
 	
-	private static long copy(File file, OutputStream output) throws IOException {
+	private static long copy(File file, OutputStream output, ProgressListener progressListener) throws IOException {
+		int fileLength = (int) file.length();
+		progressListener.onProgress(fileLength, 0);
 		InputStream input = new FileInputStream(file);
 		try {
 			byte[] buffer = new byte[BUFFER_SIZE];
@@ -62,6 +66,7 @@ public class MediaUploadConnection extends ServerConnection {
 	        while ((n = input.read(buffer)) > 0) {
 	            output.write(buffer, 0, n);
 	            count += n;
+	            progressListener.onProgress(fileLength, (int) count);
 	        }
 	        return count;
 		} finally {

@@ -3,15 +3,15 @@ package com.bravson.socialalert.android;
 import java.util.Collections;
 import java.util.List;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.EditText;
-
 import com.mobsandgeeks.saripaar.ValidationError;
 import com.mobsandgeeks.saripaar.Validator;
 import com.mobsandgeeks.saripaar.Validator.Mode;
 import com.mobsandgeeks.saripaar.Validator.ValidationListener;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.EditText;
 
 public abstract class ValidatedActivity extends Activity implements ValidationListener {
 

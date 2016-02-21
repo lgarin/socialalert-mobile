@@ -9,11 +9,11 @@ import org.androidannotations.annotations.SupposeBackground;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.res.StringRes;
 
-import android.app.Activity;
-import android.widget.Toast;
-
 import com.bravson.socialalert.android.R;
 import com.googlecode.jsonrpc4j.JsonRpcClientException;
+
+import android.app.Activity;
+import android.widget.Toast;
 
 @EBean
 public class RpcCall extends RpcProxyFactory {

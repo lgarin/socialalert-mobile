@@ -11,14 +11,13 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.FragmentById;
-import org.androidannotations.annotations.SystemService;
 import org.androidannotations.annotations.Touch;
 import org.androidannotations.annotations.ViewById;
-import org.androidannotations.api.BackgroundExecutor;
 
 import com.bravson.socialalert.android.service.CameraService;
 import com.bravson.socialalert.android.service.CameraStateCallback;
 import com.bravson.socialalert.android.service.LocationService;
+import com.bravson.socialalert.android.service.UploadQueueService;
 import com.bravson.socialalert.common.domain.MediaType;
 
 import android.Manifest;
@@ -29,20 +28,16 @@ import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
-import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
 import android.location.Location;
 import android.media.Image;
 import android.media.ImageReader;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.media.MediaRecorder;
-import android.support.annotation.NonNull;
 import android.support.annotation.UiThread;
-import android.support.v13.app.FragmentCompat;
 import android.util.Size;
 import android.view.Surface;
 import android.view.SurfaceView;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -75,6 +70,9 @@ public class CameraActivity extends Activity {
 	
 	@Bean
 	LocationService locationService;
+	
+	@Bean
+	UploadQueueService uploadQueueService;
 	
 	ImageReader imageReader;
 	
@@ -151,6 +149,8 @@ public class CameraActivity extends Activity {
     void startPost(MediaType mediaType) {
     	String fileParameterName = mediaType == MediaType.PICTURE ? "imageFile" : "videoFile";
     	File file = getTemporaryFile(mediaType);
+    	long fileId = uploadQueueService.queueFile(file, mediaType, location);
+    	
     	finish();
     	startActivity(new Intent(this, PostMediaActivity_.class).putExtra(fileParameterName, file).putExtra("location", location));
     }

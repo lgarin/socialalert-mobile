@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 
-import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EFragment;

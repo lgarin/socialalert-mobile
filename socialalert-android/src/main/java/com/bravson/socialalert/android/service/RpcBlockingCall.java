@@ -7,9 +7,9 @@ import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.res.StringRes;
 
-import android.app.ProgressDialog;
-
 import com.bravson.socialalert.android.R;
+
+import android.app.ProgressDialog;
 
 @EBean
 public class RpcBlockingCall extends RpcCall {

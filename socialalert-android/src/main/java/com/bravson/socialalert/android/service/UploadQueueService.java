@@ -2,6 +2,8 @@ package com.bravson.socialalert.android.service;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.EBean;
@@ -9,11 +11,12 @@ import org.androidannotations.annotations.RootContext;
 
 import com.bravson.socialalert.common.domain.MediaType;
 
-import android.app.Activity;
+import android.app.Notification;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.location.Address;
 import android.location.Location;
 
 @EBean
@@ -29,17 +32,18 @@ public class UploadQueueService {
 		uploadDbHelper = new UploadDbHelper(context);
 	}
 	
-	private static String getFilename(long rowId) {
-		return "upload" + rowId + ".tmp";
+	private static String getFilename(long fileId) {
+		return "upload" + fileId + ".tmp";
 	}
 	
 	private Long findOldestTimestamp() {
 		try (SQLiteDatabase db = uploadDbHelper.getReadableDatabase()) {
-			Cursor c = db.query(UploadEntry.TABLE_NAME, new String[] {UploadEntry.COLUMN_NAME_TIMESTAMP}, null, null, null, null, UploadEntry.COLUMN_NAME_TIMESTAMP);
-			if (c.isAfterLast()) {
-				return null;
+			Cursor c = db.query(UploadEntry.TABLE_NAME, UploadEntry.ALL_COLUMN_NAMES, null, null, null, null, UploadEntry.COLUMN_NAME_TIMESTAMP);
+			if (c.moveToNext()) {
+				UploadEntry entry = UploadEntry.map(c);
+				return entry.getTimestamp();
 			}
-			return c.getLong(0);
+			return null;
 		}
 	}
 	
@@ -64,25 +68,66 @@ public class UploadQueueService {
 		}
 	}
 	
-	public void queueFile(File file, MediaType type, Location location) {
+	public long queueFile(File file, MediaType type, Location location) {
 		long timestamp = System.currentTimeMillis();
 		
 		try (SQLiteDatabase db = uploadDbHelper.getWritableDatabase()) {
-			
-			// Create a new map of values, where column names are the keys
-			ContentValues values = new ContentValues();
-			values.put(UploadEntry.COLUMN_NAME_FILE, file.toString());
-			values.put(UploadEntry.COLUMN_NAME_TIMESTAMP, timestamp);
-			values.put(UploadEntry.COLUMN_NAME_TYPE, type.ordinal());
+			UploadEntry entry = new UploadEntry();
+			entry.setFile(file);
+			entry.setTimestamp(timestamp);
+			entry.setType(type);
 			if (location != null) {
-				values.put(UploadEntry.COLUMN_NAME_LATITUDE, location.getLatitude());
-				values.put(UploadEntry.COLUMN_NAME_LONGITUDE, location.getLongitude());
+				entry.setLongitude(location.getLongitude());
+				entry.setLatitude(location.getLatitude());
 			}
-	
-			// Insert the new row, returning the primary key value of the new row
-			long rowId = db.insertOrThrow(UploadEntry.TABLE_NAME, null, values);
-			file.renameTo(new File(context.getFilesDir(), getFilename(rowId)));
+			long fileId = db.insertOrThrow(UploadEntry.TABLE_NAME, null, entry.toValues());
+			file.renameTo(new File(context.getFilesDir(), getFilename(fileId)));
 			file.setLastModified(timestamp);
+			return fileId;
+		}
+	}
+	
+	public List<UploadEntry> getPendingUploads() {
+		ArrayList<UploadEntry> result = new ArrayList<>();
+		try (SQLiteDatabase db = uploadDbHelper.getReadableDatabase()) {
+			Cursor c = db.query(UploadEntry.TABLE_NAME, UploadEntry.ALL_COLUMN_NAMES, UploadEntry.COLUMN_NAME_URI + " IS NULL", null, null, null, UploadEntry.COLUMN_NAME_TIMESTAMP);
+			while (c.moveToNext()) {
+				result.add(UploadEntry.map(c));
+			}
+		}
+		return result;
+	}
+	
+	public UploadEntry findUpload(long fileId) {
+		try (SQLiteDatabase db = uploadDbHelper.getReadableDatabase()) {
+			Cursor c = findById(db, fileId);
+			if (c.moveToNext()) {
+				return UploadEntry.map(c);
+			}
+		}
+		return null;
+	}
+
+	private Cursor findById(SQLiteDatabase db, long fileId) {
+		return db.query(UploadEntry.TABLE_NAME, UploadEntry.ALL_COLUMN_NAMES, UploadEntry._ID + " = ?", new String[] { String.valueOf(fileId) }, null, null, null);
+	}
+	
+	public void updateClaimAttributes(long fileId, CharSequence title, CharSequence description, Integer categoryId, CharSequence tags, Address address) {
+		try (SQLiteDatabase db = uploadDbHelper.getReadableDatabase()) {
+			Cursor c = findById(db, fileId);
+			if (c.moveToNext()) {
+				UploadEntry entry = UploadEntry.map(c);
+				entry.setTitle(title.toString());
+				entry.setDescription(description.toString());
+				entry.setCategory(categoryId);
+				entry.setTags(tags.toString());
+				if (address != null) {
+					entry.setCountry(address.getCountryCode());
+					entry.setLocality(address.getLocality());
+					entry.setAddress(address.toString());
+				}
+				db.replace(UploadEntry.TABLE_NAME, null, entry.toValues());
+			}
 		}
 	}
 }

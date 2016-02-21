@@ -3,7 +3,6 @@ package com.bravson.socialalert.android.service;
 import java.io.IOException;
 import java.util.List;
 
-import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.SystemService;
