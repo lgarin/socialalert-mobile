@@ -5,13 +5,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class UploadDbHelper extends SQLiteOpenHelper {
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "Upload.db";
     
     private static final String SQL_CREATE_ENTRIES =
     	    "CREATE TABLE " + UploadEntry.TABLE_NAME + " (" +
     	    		UploadEntry._ID + " INTEGER PRIMARY KEY NOT NULL," +
-    	    		UploadEntry.COLUMN_NAME_FILE + " TEXT NOT NULL, " +
     	    		UploadEntry.COLUMN_NAME_TYPE + " INTEGER NOT NULL, " +
     	    		UploadEntry.COLUMN_NAME_TIMESTAMP + " NUMERIC NOT NULL, " +
     	    		UploadEntry.COLUMN_NAME_LONGITUDE + " REAL, " +

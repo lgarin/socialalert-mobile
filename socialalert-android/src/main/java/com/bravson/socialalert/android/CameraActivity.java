@@ -147,12 +147,11 @@ public class CameraActivity extends Activity {
     
     @UiThread
     void startPost(MediaType mediaType) {
-    	String fileParameterName = mediaType == MediaType.PICTURE ? "imageFile" : "videoFile";
     	File file = getTemporaryFile(mediaType);
     	long fileId = uploadQueueService.queueFile(file, mediaType, location);
-    	
+    	startService(new Intent(this, UploadService_.class).setAction(UploadService_.ACTION_START_UPLOAD).putExtra(UploadService_.FILE_ID_EXTRA, fileId));
     	finish();
-    	startActivity(new Intent(this, PostMediaActivity_.class).putExtra(fileParameterName, file).putExtra("location", location));
+    	startActivity(new Intent(this, PostMediaActivity_.class).putExtra(PostMediaActivity_.FILE_ID_EXTRA, fileId));
     }
     
     @Override

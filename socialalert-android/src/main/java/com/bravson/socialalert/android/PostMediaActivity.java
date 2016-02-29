@@ -1,10 +1,6 @@
 package com.bravson.socialalert.android;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
@@ -14,25 +10,15 @@ import org.androidannotations.annotations.Extra;
 import org.androidannotations.annotations.FragmentById;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
-import org.apache.commons.lang3.StringUtils;
 
 import com.bravson.socialalert.android.service.LocationService;
-import com.bravson.socialalert.android.service.MediaUploadConnection;
-import com.bravson.socialalert.android.service.ProgressListener;
-import com.bravson.socialalert.android.service.RpcBlockingCall;
-import com.bravson.socialalert.common.domain.GeoAddress;
-import com.bravson.socialalert.common.domain.MediaCategory;
-import com.bravson.socialalert.common.domain.MediaConstants;
-import com.bravson.socialalert.common.domain.MediaInfo;
-import com.bravson.socialalert.common.domain.MediaType;
-import com.bravson.socialalert.common.facade.MediaFacade;
+import com.bravson.socialalert.android.service.UploadEntry;
+import com.bravson.socialalert.android.service.UploadQueueService;
 import com.mobsandgeeks.saripaar.annotation.NotEmpty;
 import com.mobsandgeeks.saripaar.annotation.Order;
 
 import android.content.Intent;
 import android.location.Address;
-import android.location.Location;
-import android.text.style.UpdateLayout;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -57,14 +43,8 @@ public class PostMediaActivity extends ValidatedActivity {
 	@ViewById(R.id.addressView)
 	TextView addressView;
 	
-	@Extra("imageFile")
-	File imageFile;
-	
-	@Extra("videoFile")
-	File videoFile;
-	
-	@Extra("location")
-	Location location;
+	@Extra("fileId")
+	Long fileId;
 	
 	@FragmentById(R.id.mediaFrame)
 	MediaFrameFragment mediaFrame;
@@ -73,15 +53,12 @@ public class PostMediaActivity extends ValidatedActivity {
 	MediaCategoryFragment mediaCategory;
 	
 	@Bean
-	MediaUploadConnection uploadConnection;
-	
-	@Bean
 	LocationService locationService;
 	
 	@Bean
-	RpcBlockingCall rpc;
+	UploadQueueService uploadQueueService;
 	
-	private URI mediaUri;
+	private UploadEntry entry;
 	
 	private volatile Address address;
 	
@@ -89,24 +66,26 @@ public class PostMediaActivity extends ValidatedActivity {
 	protected void onResume() {
 		super.onResume();
 		
-		if (location != null) {
-			asyncSearchLocality(location);
+		if (fileId != null) {
+			entry = uploadQueueService.findUpload(fileId);
+		} else {
+			entry = null;
 		}
 		
-		if (imageFile != null) {
-			mediaFrame.showLocalMedia(MediaType.PICTURE, imageFile);
-			startUpload(imageFile, MediaConstants.JPG_MEDIA_TYPE);
-		} else if (videoFile != null) {
-			mediaFrame.showLocalMedia(MediaType.VIDEO, videoFile);
-			startUpload(videoFile, MediaConstants.MP4_MEDIA_TYPE);
+		if (entry == null) {
+			finish();
+		} else  {
+			mediaFrame.showLocalMedia(entry.getType(), entry.getFile(this));
+			if (entry.getLongitude() != null && entry.getLatitude() != null) {
+				asyncSearchLocality(entry.getLatitude(), entry.getLongitude());
+			}
 		}
-		publishButton.setEnabled(false);
 	}
 	
 	@Background
-	void asyncSearchLocality(Location location) {
+	void asyncSearchLocality(double latitude, double longitude) {
 		try {
-			address = locationService.getAddress(location);
+			address = locationService.getAddress(latitude, longitude);
 			if (address != null) {
 				asyncDisplayAddress(address);
 			}
@@ -119,92 +98,13 @@ public class PostMediaActivity extends ValidatedActivity {
 	void asyncDisplayAddress(Address address) {
 		addressView.setText(address.getLocality() + " - " + address.getCountryName());
 	}
-	
-	private class UploadProgressListener implements ProgressListener {
-
-		@Override
-		public void onProgress(int maxProgress, int currentProgress) {
-			// TODO Auto-generated method stub
-			
-		}
-		
-	}
-	
-	@Background
-	void startUpload(File file, String mediaType) {
-		try {
-			String mediaUri = uploadConnection.upload(file, mediaType, new UploadProgressListener());
-			if (mediaUri != null) {
-				enablePublish(URI.create(mediaUri));
-			} else {
-				// TODO
-			}
-		} catch (Exception e) {
-			// TODO
-		}
-	}
-	
-	@UiThread
-	void enablePublish(URI mediaUri) {
-		publishButton.setEnabled(true);
-		this.mediaUri = mediaUri;
-	}
 
 	@Click(R.id.publishButton)
 	void onPublish() {
-		if (validate() && mediaUri != null) {
-			if (imageFile != null) {
-				asyncClaimPicture(mediaUri, titleView.getText().toString(), descriptionView.getText().toString(), mediaCategory.getSelectedCategory(), tagsView.getText().toString());
-			} else if (videoFile != null) {
-				asyncClaimVideo(mediaUri, titleView.getText().toString(), descriptionView.getText().toString(), mediaCategory.getSelectedCategory(), tagsView.getText().toString());
-			}
+		if (validate()) {
+			uploadQueueService.updateClaimAttributes(entry.getFileId(), titleView.getText(), descriptionView.getText(), mediaCategory.getSelectedCategory(), tagsView.getText(), address);
+			startService(new Intent(this, UploadService_.class).setAction(UploadService_.ACTION_START_UPLOAD).putExtra(UploadService_.FILE_ID_EXTRA, entry.getFileId()));
+			finish();
 		}
-	}
-	
-	private GeoAddress buildGeoAddress() {
-		if (address == null) {
-			return null;
-		}
-		GeoAddress result = new GeoAddress();
-		result.setCountry(address.getCountryCode());
-		result.setLocality(address.getLocality());
-		result.setFormattedAddress(address.toString());
-		result.setLatitude(address.getLatitude());
-		result.setLongitude(address.getLongitude());
-		return result;
-	}
-	
-	@Background
-	void asyncClaimPicture(URI mediaUri, String title, String description, Integer categoryIndex, String tags) {
-		try {
-			ArrayList<MediaCategory> categories = new ArrayList<MediaCategory>();
-			if (categoryIndex != null) {
-				categories.add(MediaCategory.values()[categoryIndex]);
-			}
-			MediaInfo info = rpc.with(MediaFacade.class).claimPicture(mediaUri, title, buildGeoAddress(), categories, Arrays.asList(StringUtils.split(tags)));
-			asyncShowSuccess(info);
-		} catch (Exception e) {
-			//TODO
-		}
-	}
-	
-	@Background
-	void asyncClaimVideo(URI mediaUri, String title, String description, Integer categoryIndex, String tags) {
-		try {
-			ArrayList<MediaCategory> categories = new ArrayList<MediaCategory>();
-			if (categoryIndex != null) {
-				categories.add(MediaCategory.values()[categoryIndex]);
-			}
-			MediaInfo info = rpc.with(MediaFacade.class).claimVideo(mediaUri, title, buildGeoAddress(), categories, Arrays.asList(StringUtils.split(tags)));
-			asyncShowSuccess(info);
-		} catch (Exception e) {
-			//TODO
-		}
-	}
-
-	@UiThread
-	void asyncShowSuccess(MediaInfo info) {
-		finish();
-		startActivity(new Intent(this, MediaPreviewActivity_.class).putExtra("mediaUri", info.getMediaUri()));
 	}
 }

@@ -37,8 +37,8 @@ public class LocationService {
 		locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, new LocationUpdateListener(), null);
 	}
 	
-	public Address getAddress(Location location) throws IOException {
-		List<Address> addressList = new Geocoder(activity).getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+	public Address getAddress(double latitude, double longitude) throws IOException {
+		List<Address> addressList = new Geocoder(activity).getFromLocation(latitude, longitude, 1);
 		if (addressList.isEmpty()) {
 			return null;
 		}

@@ -70,6 +70,8 @@
         <activity android:name=".PostMediaActivity_">
 			<intent-filter ></intent-filter>
         </activity>
+        <service android:name=".UploadService_" android:exported="false">
+        </service>
     </application>
 
 </manifest>

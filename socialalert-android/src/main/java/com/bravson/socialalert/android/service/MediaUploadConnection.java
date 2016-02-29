@@ -21,7 +21,7 @@ public class MediaUploadConnection extends ServerConnection {
 	@StringRes
 	String baseUploadUrl;
 
-    private static final int BUFFER_SIZE = 1024 * 1024;
+    private static final int BUFFER_SIZE = 16 * 1024;
 
 	@SupposeBackground
 	public String upload(File file, String contentType, ProgressListener progressListener) throws Exception {
@@ -55,7 +55,12 @@ public class MediaUploadConnection extends ServerConnection {
 		
 	}
 	
-	private static long copy(File file, OutputStream output, ProgressListener progressListener) throws IOException {
+	@UiThread
+	void notifyProgress(ProgressListener progressListener, int maxProgress, int currentProgress) {
+		progressListener.onProgress(maxProgress, currentProgress);
+	}
+	
+	private long copy(File file, OutputStream output, ProgressListener progressListener) throws IOException {
 		int fileLength = (int) file.length();
 		progressListener.onProgress(fileLength, 0);
 		InputStream input = new FileInputStream(file);
@@ -66,7 +71,13 @@ public class MediaUploadConnection extends ServerConnection {
 	        while ((n = input.read(buffer)) > 0) {
 	            output.write(buffer, 0, n);
 	            count += n;
-	            progressListener.onProgress(fileLength, (int) count);
+	            try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	            notifyProgress(progressListener, fileLength, (int) count);
 	        }
 	        return count;
 		} finally {

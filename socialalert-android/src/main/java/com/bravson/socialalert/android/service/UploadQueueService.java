@@ -2,6 +2,7 @@ package com.bravson.socialalert.android.service;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,10 +31,6 @@ public class UploadQueueService {
 	@AfterInject
 	void init() {
 		uploadDbHelper = new UploadDbHelper(context);
-	}
-	
-	private static String getFilename(long fileId) {
-		return "upload" + fileId + ".tmp";
 	}
 	
 	private Long findOldestTimestamp() {
@@ -73,7 +70,6 @@ public class UploadQueueService {
 		
 		try (SQLiteDatabase db = uploadDbHelper.getWritableDatabase()) {
 			UploadEntry entry = new UploadEntry();
-			entry.setFile(file);
 			entry.setTimestamp(timestamp);
 			entry.setType(type);
 			if (location != null) {
@@ -81,7 +77,8 @@ public class UploadQueueService {
 				entry.setLatitude(location.getLatitude());
 			}
 			long fileId = db.insertOrThrow(UploadEntry.TABLE_NAME, null, entry.toValues());
-			file.renameTo(new File(context.getFilesDir(), getFilename(fileId)));
+			entry.setFileId(fileId);
+			file.renameTo(entry.getFile(context));
 			file.setLastModified(timestamp);
 			return fileId;
 		}
@@ -128,6 +125,25 @@ public class UploadQueueService {
 				}
 				db.replace(UploadEntry.TABLE_NAME, null, entry.toValues());
 			}
+		}
+	}
+
+	public UploadEntry updateMediaUri(long fileId, URI mediaUri) {
+		try (SQLiteDatabase db = uploadDbHelper.getReadableDatabase()) {
+			Cursor c = findById(db, fileId);
+			if (c.moveToNext()) {
+				UploadEntry entry = UploadEntry.map(c);
+				entry.setMediaUri(mediaUri);
+				db.replace(UploadEntry.TABLE_NAME, null, entry.toValues());
+				return entry;
+			}
+			return null;
+		}
+	}
+	
+	public void deleteFile(long fileId) {
+		try (SQLiteDatabase db = uploadDbHelper.getReadableDatabase()) {
+			db.delete(UploadEntry.TABLE_NAME, UploadEntry._ID + " = ?", new String[] { String.valueOf(fileId) });
 		}
 	}
 }

@@ -2,17 +2,25 @@ package com.bravson.socialalert.android.service;
 
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.bravson.socialalert.common.domain.GeoAddress;
+import com.bravson.socialalert.common.domain.MediaCategory;
+import com.bravson.socialalert.common.domain.MediaConstants;
 import com.bravson.socialalert.common.domain.MediaType;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.provider.BaseColumns;
 
 public final class UploadEntry implements BaseColumns  {
 
 	public static final String TABLE_NAME = "entry";
-    public static final String COLUMN_NAME_FILE = "file";
     public static final String COLUMN_NAME_TYPE = "type";
     public static final String COLUMN_NAME_TIMESTAMP = "timestamp";
     public static final String COLUMN_NAME_LONGITUDE = "longitude";
@@ -26,7 +34,7 @@ public final class UploadEntry implements BaseColumns  {
     public static final String COLUMN_NAME_LOCALITY = "locality";
     public static final String COLUMN_NAME_ADDRESS = "address";
     
-	public static final String[] ALL_COLUMN_NAMES = { _ID, COLUMN_NAME_FILE, COLUMN_NAME_TYPE, COLUMN_NAME_TIMESTAMP,
+	public static final String[] ALL_COLUMN_NAMES = { _ID, COLUMN_NAME_TYPE, COLUMN_NAME_TIMESTAMP,
 			COLUMN_NAME_LONGITUDE, COLUMN_NAME_LATITUDE, COLUMN_NAME_URI, COLUMN_NAME_CATEGORY, COLUMN_NAME_TITLE,
 			COLUMN_NAME_DESCRIPTION, COLUMN_NAME_TAGS, COLUMN_NAME_COUNTRY, COLUMN_NAME_LOCALITY, COLUMN_NAME_ADDRESS }; 
 	
@@ -34,7 +42,6 @@ public final class UploadEntry implements BaseColumns  {
 		UploadEntry result = new UploadEntry();
 		int index = 0;
 		result.fileId = cursor.getLong(index++);
-		result.file = new File(cursor.getString(index++));
 		result.type = MediaType.valueOf(cursor.getString(index++));
 		result.timestamp = cursor.getLong(index++);
 		if (!cursor.isNull(index)) {
@@ -72,8 +79,6 @@ public final class UploadEntry implements BaseColumns  {
 	
 	private Long fileId;
 	
-	private File file;
-	
 	private URI mediaUri;
 
 	private MediaType type;
@@ -101,12 +106,13 @@ public final class UploadEntry implements BaseColumns  {
 	public ContentValues toValues() {
 		ContentValues values = new ContentValues();
 		values.put(UploadEntry._ID, fileId);
-		values.put(UploadEntry.COLUMN_NAME_FILE, file.toString());
 		values.put(UploadEntry.COLUMN_NAME_TIMESTAMP, timestamp);
 		values.put(UploadEntry.COLUMN_NAME_TYPE, type.name());
 		values.put(UploadEntry.COLUMN_NAME_LATITUDE, latitude);
 		values.put(UploadEntry.COLUMN_NAME_LONGITUDE, longitude);
-		values.put(UploadEntry.COLUMN_NAME_URI, mediaUri.toString());
+		if (mediaUri != null) {
+			values.put(UploadEntry.COLUMN_NAME_URI, mediaUri.toString());
+		}
 		values.put(UploadEntry.COLUMN_NAME_CATEGORY, category);
 		values.put(UploadEntry.COLUMN_NAME_TITLE, title);
 		values.put(UploadEntry.COLUMN_NAME_DESCRIPTION, description);
@@ -124,16 +130,15 @@ public final class UploadEntry implements BaseColumns  {
 	public void setFileId(long fileId) {
 		this.fileId = fileId;
 	}
-
-	public File getFile() {
-		return file;
-	}
-
-	public void setFile(File file) {
-		this.file = file;
-	}
 	
-    
+	private static String getFilename(long fileId) {
+		return "upload" + fileId + ".tmp";
+	}
+
+	public File getFile(Context context) {
+		return new File(context.getFilesDir(), getFilename(fileId));
+	}
+
     public URI getMediaUri() {
 		return mediaUri;
 	}
@@ -232,5 +237,53 @@ public final class UploadEntry implements BaseColumns  {
 
 	public void setTimestamp(Long timestamp) {
 		this.timestamp = timestamp;
+	}
+	
+	public boolean isEnriched() {
+		return getTitle() != null;
+	}
+
+	public boolean isUploaded() {
+		return getMediaUri() != null;
+	}
+	
+	public boolean isCompleted() {
+		return isUploaded() && isEnriched();
+	}
+	
+	public GeoAddress buildGeoAddress() {
+		if (getLatitude() == null || getLongitude() == null) {
+			return null;
+		}
+		GeoAddress result = new GeoAddress();
+		result.setCountry(getCountry());
+		result.setLocality(getLocality());
+		result.setFormattedAddress(getAddress());
+		result.setLatitude(getLatitude());
+		result.setLongitude(getLongitude());
+		return result;
+	}
+	
+	public String getContentType() {
+		switch (getType()) {
+		case PICTURE:
+			return MediaConstants.JPG_MEDIA_TYPE;
+		case VIDEO:
+			return MediaConstants.MP4_MEDIA_TYPE;
+		default:
+			throw new IllegalArgumentException("Unsupported media type " + getType());
+		}
+	}
+	
+	public List<MediaCategory> getCategoryList() {
+		ArrayList<MediaCategory> categories = new ArrayList<MediaCategory>();
+		if (category != null) {
+			categories.add(MediaCategory.values()[category]);
+		}
+		return categories;
+	}
+	
+	public List<String> getTagList() {
+		return Arrays.asList(StringUtils.split(tags));
 	}
 }
