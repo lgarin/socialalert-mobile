@@ -13,13 +13,14 @@ import com.bravson.socialalert.android.R;
 import com.googlecode.jsonrpc4j.JsonRpcClientException;
 
 import android.app.Activity;
+import android.content.Context;
 import android.widget.Toast;
 
 @EBean
 public class RpcCall extends RpcProxyFactory {
 
 	@RootContext
-	Activity activity;
+	Context context;
 	
 	@StringRes(R.string.unknownErrorMessage)
 	String unknownErrorMessage;
@@ -29,13 +30,13 @@ public class RpcCall extends RpcProxyFactory {
 	
 	@UiThread
 	void asyncShowCallError(Exception exception) {
-		Toast.makeText(activity, unknownErrorMessage, Toast.LENGTH_LONG).show();
+		Toast.makeText(context, unknownErrorMessage, Toast.LENGTH_LONG).show();
 	}
 	
 	@UiThread
 	void asyncShowCallError(JsonRpcClientException exception) {
 		// TODO handle specific error codes
-		Toast.makeText(activity, exception.getMessage(), Toast.LENGTH_LONG).show();
+		Toast.makeText(context, exception.getMessage(), Toast.LENGTH_LONG).show();
 	}
 	
 	protected InvocationHandler createInvocationHandler(Class<?> serviceInterface) {

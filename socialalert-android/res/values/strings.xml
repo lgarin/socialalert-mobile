@@ -33,6 +33,10 @@
 
     <string name="uploadContentTitle">Upload Media</string>
     <string name="uploadContentProgress">Upload in progress</string>
+    <string name="uploadContentPending">Upload pending</string>
+    <string name="uploadContentFailed">Upload failed</string>
+    <string name="uploadContentBlocked">Waiting user input</string>
+    <string name="uploadContentCompleted">Upload completed</string>
     
     <string name="loginText">Login</string>
     <string name="emailHint">email</string>

@@ -87,7 +87,7 @@ public class UploadQueueService {
 	public List<UploadEntry> getPendingUploads() {
 		ArrayList<UploadEntry> result = new ArrayList<>();
 		try (SQLiteDatabase db = uploadDbHelper.getReadableDatabase()) {
-			Cursor c = db.query(UploadEntry.TABLE_NAME, UploadEntry.ALL_COLUMN_NAMES, UploadEntry.COLUMN_NAME_URI + " IS NULL", null, null, null, UploadEntry.COLUMN_NAME_TIMESTAMP);
+			Cursor c = db.query(UploadEntry.TABLE_NAME, UploadEntry.ALL_COLUMN_NAMES, null, null, null, null, UploadEntry.COLUMN_NAME_TIMESTAMP);
 			while (c.moveToNext()) {
 				result.add(UploadEntry.map(c));
 			}

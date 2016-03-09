@@ -5,8 +5,12 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EIntentService;
@@ -21,6 +25,7 @@ import com.bravson.socialalert.android.service.ProgressListener;
 import com.bravson.socialalert.android.service.RpcCall;
 import com.bravson.socialalert.android.service.UploadEntry;
 import com.bravson.socialalert.android.service.UploadNotification;
+import com.bravson.socialalert.android.service.UploadNotificationState;
 import com.bravson.socialalert.android.service.UploadQueueService;
 import com.bravson.socialalert.common.domain.GeoAddress;
 import com.bravson.socialalert.common.domain.MediaCategory;
@@ -44,16 +49,28 @@ public class UploadService extends AbstractIntentService {
 	@SystemService
 	NotificationManager notificationManager;
 	
-	@StringRes(R.string.uploadContentTitle)
-	String uploadContentTitle;
-	
-	@StringRes(R.string.uploadContentProgress)
-	String uploadContentProgress;
-	
-	static final Map<Long, UploadNotification> notificationMap = new ConcurrentHashMap<>();
+	static final NavigableMap<Long, UploadNotification> notificationMap = new ConcurrentSkipListMap<>();
 	
 	public UploadService() {
 		super("UploadService");
+	}
+	
+	@AfterInject
+	void loadPendingUploads() {
+		//currentUpload.set(null);
+		//notificationMap.clear();
+		
+		uploadQueueService.purgeOldFiles();
+		for (UploadEntry upload : uploadQueueService.getPendingUploads()) {
+			startProcessing(upload);
+		}
+	}
+	
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		uploadQueueService.purgeOldFiles();
 	}
 	
 	private class UploadProgressListener implements ProgressListener {
@@ -61,7 +78,7 @@ public class UploadService extends AbstractIntentService {
 		private UploadNotification notification;
 		
 		public UploadProgressListener(UploadEntry upload) {
-			this.notification = getNotification(upload);
+			notification = getNotification(upload);
 		}
 		
 		@Override
@@ -78,31 +95,47 @@ public class UploadService extends AbstractIntentService {
 			return;
 		}
 		
-		UploadNotification notifcation = getNotification(upload);
+		startProcessing(upload);
+	}
+	
+	private long getNextUploadFileId() {
+		if (notificationMap.isEmpty()) {
+			return 0;
+		}
+		return notificationMap.firstKey();
+	}
+
+	void startProcessing(UploadEntry upload) {
 		if (upload.isCompleted()) {
 			claimMedia(upload);
-		} else if (!upload.isUploaded() && notifcation.beginUpload()) {
-			showNotification(upload);
+		} else if (!upload.isUploaded() && upload.getFileId() == getNextUploadFileId()) {
 			asyncUpload(upload);
 		}
 	}
 	
 	@Background
 	void asyncUpload(UploadEntry upload) {
+		showNotification(upload, UploadNotificationState.UPLOADING);
 		try {
 			URI mediaUri = URI.create(uploadConnection.upload(upload.getFile(this), upload.getContentType(), new UploadProgressListener(upload)));
 			upload = uploadQueueService.updateMediaUri(upload.getFileId(), mediaUri);
-			showNotification(upload);
-			claimMedia(upload);
+			if (upload.isEnriched()) {
+				claimMedia(upload);
+			} else {
+				showNotification(upload, UploadNotificationState.INPUT_REQUIRED);
+				startNextUpload(upload);
+			}
 		} catch (Exception e) {
 			asyncShowError(upload, e);
 		}
 	}
 	
 	@UiThread
-	void showNotification(UploadEntry upload) {
+	void showNotification(UploadEntry upload, UploadNotificationState state) {
 		UploadNotification notification = getNotification(upload);
+		notification.setState(state);
 		notificationManager.notify(notification.getNoticationId(), notification.buildUpdateNotification(upload));
+		startNextUpload(upload);
 	}
 	
 	private UploadNotification getNotification(UploadEntry entry) {
@@ -114,13 +147,14 @@ public class UploadService extends AbstractIntentService {
 		return result;
 	}
 
-	void claimMedia(UploadEntry entry) {
-		switch (entry.getType()) {
+	void claimMedia(UploadEntry upload) {
+		showNotification(upload, UploadNotificationState.CLAIMING);
+		switch (upload.getType()) {
 		case PICTURE:
-			asyncClaimPicture(entry);
+			asyncClaimPicture(upload);
 			break;
 		case VIDEO:
-			asyncClaimVideo(entry);
+			asyncClaimVideo(upload);
 			break;
 		}
 	}
@@ -139,16 +173,26 @@ public class UploadService extends AbstractIntentService {
 	@UiThread
 	void asyncShowError(UploadEntry entry, Exception e) {
 		UploadNotification notification = getNotification(entry);
+		notification.setState(UploadNotificationState.ERROR);
 		notificationManager.notify(notification.getNoticationId(), notification.buildUpdateNotification(entry));
-		notification.resetUpload();
+		notificationMap.remove(entry.getFileId());
+		startNextUpload(entry);
+	}
+
+	void startNextUpload(UploadEntry previousUpload) {
+		if (!notificationMap.isEmpty()) {
+			Long fileId = notificationMap.firstKey();
+			startUpload(fileId);
+		}
 	}
 
 	@UiThread
 	void asyncShowSuccess(UploadEntry entry) {
-		// TODO Auto-generated method stub
 		UploadNotification notification = getNotification(entry);
-		notificationManager.cancel(notification.getNoticationId());
+		notification.setState(UploadNotificationState.COMPLETED);
+		notificationManager.notify(notification.getNoticationId(), notification.buildUpdateNotification(entry));
 		notificationMap.remove(entry.getFileId());
+		startNextUpload(entry);
 	}
 
 	@Background

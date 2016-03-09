@@ -33,7 +33,7 @@ public class RpcBlockingCall extends RpcCall {
 	
 	@UiThread
 	void asyncShowProgressDialog() {
-		progressDialog = ProgressDialog.show(activity, activity.getTitle(), loadingDataMessage, true);
+		progressDialog = ProgressDialog.show(context, context.getTitle(), loadingDataMessage, true);
 	}
 	
 	protected InvocationHandler createInvocationHandler(Class<?> serviceInterface) {
