@@ -1,10 +1,9 @@
 package com.bravson.socialalert.android.service;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.bravson.socialalert.android.ClaimMediaActivity_;
 import com.bravson.socialalert.android.MediaPreviewActivity_;
-import com.bravson.socialalert.android.PostMediaActivity_;
 import com.bravson.socialalert.android.R;
 import com.bravson.socialalert.android.UploadService_;
 
@@ -12,7 +11,6 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.os.SystemClock;
 
 public class UploadNotification {
 
@@ -61,7 +59,7 @@ public class UploadNotification {
 		builder.setWhen(upload.getTimestamp()).setOngoing(!upload.isCompleted());
 		builder.setContentTitle(uploadContentTitle).setContentText(uploadContentProgress).setSmallIcon(R.drawable.alarm63);
 		if (!upload.isEnriched()) {
-			Intent intent = new Intent(context, PostMediaActivity_.class).putExtra(PostMediaActivity_.FILE_ID_EXTRA, upload.getFileId());
+			Intent intent = new Intent(context, ClaimMediaActivity_.class).putExtra(ClaimMediaActivity_.FILE_ID_EXTRA, upload.getFileId());
 			builder.setContentIntent(PendingIntent.getActivity(context, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT));
 		} else if (state == UploadNotificationState.COMPLETED) {
 			Intent intent = new Intent(context, MediaPreviewActivity_.class).putExtra(MediaPreviewActivity_.MEDIA_URI_EXTRA, upload.getMediaUri());

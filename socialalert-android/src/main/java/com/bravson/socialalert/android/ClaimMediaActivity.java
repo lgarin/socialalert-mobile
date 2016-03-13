@@ -13,7 +13,7 @@ import org.androidannotations.annotations.ViewById;
 
 import com.bravson.socialalert.android.service.LocationService;
 import com.bravson.socialalert.android.service.UploadEntry;
-import com.bravson.socialalert.android.service.UploadQueueService;
+import com.bravson.socialalert.android.service.UploadDbService;
 import com.mobsandgeeks.saripaar.annotation.NotEmpty;
 import com.mobsandgeeks.saripaar.annotation.Order;
 
@@ -23,8 +23,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-@EActivity(R.layout.post_media)
-public class PostMediaActivity extends ValidatedActivity {
+@EActivity(R.layout.claim_media)
+public class ClaimMediaActivity extends ValidatedActivity {
 
 	@ViewById(R.id.titleView)
 	@NotEmpty
@@ -56,7 +56,7 @@ public class PostMediaActivity extends ValidatedActivity {
 	LocationService locationService;
 	
 	@Bean
-	UploadQueueService uploadQueueService;
+	UploadDbService uploadQueueService;
 	
 	private UploadEntry entry;
 	
@@ -103,7 +103,7 @@ public class PostMediaActivity extends ValidatedActivity {
 	void onPublish() {
 		if (validate()) {
 			uploadQueueService.updateClaimAttributes(entry.getFileId(), titleView.getText(), descriptionView.getText(), mediaCategory.getSelectedCategory(), tagsView.getText(), address);
-			startService(new Intent(this, UploadService_.class).setAction(UploadService_.ACTION_START_UPLOAD).putExtra(UploadService_.FILE_ID_EXTRA, entry.getFileId()));
+			startService(new Intent(this, UploadService_.class).setAction(UploadService_.ACTION_QUEUE_UPLOAD).putExtra(UploadService_.FILE_ID_EXTRA, entry.getFileId()));
 			finish();
 		}
 	}

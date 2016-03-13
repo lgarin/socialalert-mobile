@@ -21,7 +21,7 @@ import android.location.Address;
 import android.location.Location;
 
 @EBean
-public class UploadQueueService {
+public class UploadDbService {
 
 	private UploadDbHelper uploadDbHelper;
 	
@@ -61,7 +61,7 @@ public class UploadQueueService {
 	public void purgeOldFiles() {
 		Long minTimestamp = findOldestTimestamp();
 		if (minTimestamp != null) {
-			deleteOldFiles(minTimestamp);
+			deleteOldFiles(minTimestamp - 1000);
 		}
 	}
 	
@@ -69,18 +69,24 @@ public class UploadQueueService {
 		long timestamp = System.currentTimeMillis();
 		
 		try (SQLiteDatabase db = uploadDbHelper.getWritableDatabase()) {
-			UploadEntry entry = new UploadEntry();
-			entry.setTimestamp(timestamp);
-			entry.setType(type);
-			if (location != null) {
-				entry.setLongitude(location.getLongitude());
-				entry.setLatitude(location.getLatitude());
+			db.beginTransaction();
+			try {
+				UploadEntry entry = new UploadEntry();
+				entry.setTimestamp(timestamp);
+				entry.setType(type);
+				if (location != null) {
+					entry.setLongitude(location.getLongitude());
+					entry.setLatitude(location.getLatitude());
+				}
+				long fileId = db.insertOrThrow(UploadEntry.TABLE_NAME, null, entry.toValues());
+				entry.setFileId(fileId);
+				file.renameTo(entry.getFile(context));
+				file.setLastModified(timestamp);
+				db.setTransactionSuccessful();
+				return fileId;
+			} finally {
+				db.endTransaction();
 			}
-			long fileId = db.insertOrThrow(UploadEntry.TABLE_NAME, null, entry.toValues());
-			entry.setFileId(fileId);
-			file.renameTo(entry.getFile(context));
-			file.setLastModified(timestamp);
-			return fileId;
 		}
 	}
 	
@@ -123,9 +129,11 @@ public class UploadQueueService {
 					entry.setLocality(address.getLocality());
 					entry.setAddress(address.toString());
 				}
-				db.replace(UploadEntry.TABLE_NAME, null, entry.toValues());
+				db.replaceOrThrow(UploadEntry.TABLE_NAME, null, entry.toValues());
 			}
 		}
+		UploadEntry newENtry = findUpload(fileId);
+		System.out.println(newENtry.toValues());
 	}
 
 	public UploadEntry updateMediaUri(long fileId, URI mediaUri) {

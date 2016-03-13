@@ -4,16 +4,22 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.res.StringRes;
 
 import com.bravson.socialalert.android.R;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 
 @EBean
 public class RpcBlockingCall extends RpcCall {
 
+	@RootContext
+	Activity activity;
+	
 	@StringRes(R.string.loadingDataMessage)
 	String loadingDataMessage;
 	
@@ -33,7 +39,7 @@ public class RpcBlockingCall extends RpcCall {
 	
 	@UiThread
 	void asyncShowProgressDialog() {
-		progressDialog = ProgressDialog.show(context, context.getTitle(), loadingDataMessage, true);
+		progressDialog = ProgressDialog.show(context, activity.getTitle(), loadingDataMessage, true);
 	}
 	
 	protected InvocationHandler createInvocationHandler(Class<?> serviceInterface) {

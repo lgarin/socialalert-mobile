@@ -76,6 +76,7 @@ public class LoginActivity extends ValidatedActivity {
 	void asyncShowLoginSuccess(UserInfo info) {
 		preferences.username().put(info.getEmail());
 		application.setCurrentUser(info);
+		startService(new Intent(this, UploadService_.class).setAction(UploadService_.ACTION_TRIGGER_PROCESSING));
 		startActivity(new Intent(this, TopMediaActivity_.class));
 	}
 	

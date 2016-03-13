@@ -40,39 +40,39 @@ public final class UploadEntry implements BaseColumns  {
 	
 	public static UploadEntry map(Cursor cursor) {
 		UploadEntry result = new UploadEntry();
-		int index = 0;
-		result.fileId = cursor.getLong(index++);
-		result.type = MediaType.valueOf(cursor.getString(index++));
-		result.timestamp = cursor.getLong(index++);
-		if (!cursor.isNull(index)) {
-			result.longitude = cursor.getDouble(index++);
+		int index = -1;
+		result.fileId = cursor.getLong(++index);
+		result.type = MediaType.valueOf(cursor.getString(++index));
+		result.timestamp = cursor.getLong(++index);
+		if (!cursor.isNull(++index)) {
+			result.longitude = cursor.getDouble(index);
 		}
-		if (!cursor.isNull(index)) {
-			result.latitude = cursor.getDouble(index++);
+		if (!cursor.isNull(++index)) {
+			result.latitude = cursor.getDouble(index);
 		}
-		if (!cursor.isNull(index)) {
-			result.mediaUri = URI.create(cursor.getString(index++));
+		if (!cursor.isNull(++index)) {
+			result.mediaUri = URI.create(cursor.getString(index));
 		}
-		if (!cursor.isNull(index)) {
-			result.category = cursor.getInt(index++);
+		if (!cursor.isNull(++index)) {
+			result.category = cursor.getInt(index);
 		}
-		if (!cursor.isNull(index)) {
-			result.title = cursor.getString(index++);
+		if (!cursor.isNull(++index)) {
+			result.title = cursor.getString(index);
 		}
-		if (!cursor.isNull(index)) {
-			result.description = cursor.getString(index++);
+		if (!cursor.isNull(++index)) {
+			result.description = cursor.getString(index);
 		}
-		if (!cursor.isNull(index)) {
-			result.tags = cursor.getString(index++);
+		if (!cursor.isNull(++index)) {
+			result.tags = cursor.getString(index);
 		}
-		if (!cursor.isNull(index)) {
-			result.country = cursor.getString(index++);
+		if (!cursor.isNull(++index)) {
+			result.country = cursor.getString(index);
 		}
-		if (!cursor.isNull(index)) {
-			result.locality = cursor.getString(index++);
+		if (!cursor.isNull(++index)) {
+			result.locality = cursor.getString(index);
 		}
-		if (!cursor.isNull(index)) {
-			result.address = cursor.getString(index++);
+		if (!cursor.isNull(++index)) {
+			result.address = cursor.getString(index);
 		}
 		return result;
 	}

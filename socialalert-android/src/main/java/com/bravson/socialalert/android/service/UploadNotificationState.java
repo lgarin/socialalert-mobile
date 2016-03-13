@@ -7,4 +7,5 @@ public enum UploadNotificationState {
 	CLAIMING,
 	COMPLETED,
 	ERROR;
+	
 }

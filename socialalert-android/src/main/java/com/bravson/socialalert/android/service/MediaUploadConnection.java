@@ -72,7 +72,7 @@ public class MediaUploadConnection extends ServerConnection {
 	            output.write(buffer, 0, n);
 	            count += n;
 	            try {
-					Thread.sleep(1000);
+					Thread.sleep(100);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

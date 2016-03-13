@@ -17,7 +17,7 @@ import org.androidannotations.annotations.ViewById;
 import com.bravson.socialalert.android.service.CameraService;
 import com.bravson.socialalert.android.service.CameraStateCallback;
 import com.bravson.socialalert.android.service.LocationService;
-import com.bravson.socialalert.android.service.UploadQueueService;
+import com.bravson.socialalert.android.service.UploadDbService;
 import com.bravson.socialalert.common.domain.MediaType;
 
 import android.Manifest;
@@ -72,7 +72,7 @@ public class CameraActivity extends Activity {
 	LocationService locationService;
 	
 	@Bean
-	UploadQueueService uploadQueueService;
+	UploadDbService uploadQueueService;
 	
 	ImageReader imageReader;
 	
@@ -149,9 +149,9 @@ public class CameraActivity extends Activity {
     void startPost(MediaType mediaType) {
     	File file = getTemporaryFile(mediaType);
     	long fileId = uploadQueueService.queueFile(file, mediaType, location);
-    	startService(new Intent(this, UploadService_.class).setAction(UploadService_.ACTION_START_UPLOAD).putExtra(UploadService_.FILE_ID_EXTRA, fileId));
+    	startService(new Intent(this, UploadService_.class).setAction(UploadService_.ACTION_QUEUE_UPLOAD).putExtra(UploadService_.FILE_ID_EXTRA, fileId));
     	finish();
-    	startActivity(new Intent(this, PostMediaActivity_.class).putExtra(PostMediaActivity_.FILE_ID_EXTRA, fileId));
+    	startActivity(new Intent(this, ClaimMediaActivity_.class).putExtra(ClaimMediaActivity_.FILE_ID_EXTRA, fileId));
     }
     
     @Override

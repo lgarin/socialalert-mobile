@@ -67,7 +67,7 @@
         <activity android:name=".CameraActivity_">
 			<intent-filter ></intent-filter>
         </activity>
-        <activity android:name=".PostMediaActivity_">
+        <activity android:name=".ClaimMediaActivity_">
 			<intent-filter ></intent-filter>
         </activity>
         <service android:name=".UploadService_" android:exported="false">
