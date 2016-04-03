@@ -2,6 +2,7 @@ package com.bravson.socialalert.android;
 
 import java.util.ArrayList;
 
+import android.widget.ImageButton;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
@@ -32,6 +33,15 @@ public class TopMediaActivity extends Activity {
 	
 	@Bean
 	RpcBlockingCall rpc;
+
+	@ViewById(R.id.cameraButton)
+	ImageButton cameraButton;
+
+	@ViewById(R.id.mapButton)
+	ImageButton mapButton;
+
+	@ViewById(R.id.plusButton)
+	ImageButton plusButton;
 	
 	@ViewById(R.id.gridView)
 	GridView gridView;
@@ -45,17 +55,38 @@ public class TopMediaActivity extends Activity {
 	@IntegerRes
 	int mediaMaxThumbnails;
 
-	MediaThumbnailAdapater adapter;
+	MediaThumbnailAdapter adapter;
 	
 	@AfterViews
     void bindAdapter() {
-        adapter = new MediaThumbnailAdapater(this);
+        adapter = new MediaThumbnailAdapter(this);
 		gridView.setAdapter(adapter);
+		mapButton.setVisibility(View.INVISIBLE);
+		cameraButton.setVisibility(View.INVISIBLE);
     }
 	
 	@Click(R.id.cameraButton)
 	void onCameraClick() {
 		startActivity(new Intent(this, CameraActivity_.class));
+	}
+	
+	@Click(R.id.mapButton)
+	void onMapClick() {
+		startActivity(new Intent(this, MapActivity_.class));
+	}
+
+	private static void switchVisibility(ImageButton button) {
+		if (button.getVisibility() == View.INVISIBLE) {
+			button.setVisibility(View.VISIBLE);
+		} else {
+			button.setVisibility(View.INVISIBLE);
+		}
+	}
+
+	@Click(R.id.plusButton)
+	void onPlusClick() {
+		switchVisibility(mapButton);
+		switchVisibility(cameraButton);
 	}
 
 	@Override
@@ -103,9 +134,9 @@ public class TopMediaActivity extends Activity {
         startActivity(new Intent(this, MediaPreviewActivity_.class).putExtra("mediaUri", mediaInfo.getMediaUri()));
     }
 	
-	public static class MediaThumbnailAdapater extends ArrayAdapter<MediaInfo> {
+	public static class MediaThumbnailAdapter extends ArrayAdapter<MediaInfo> {
 		
-		public MediaThumbnailAdapater(Context context) {
+		public MediaThumbnailAdapter(Context context) {
 			super(context, R.layout.media_thumbnail, new ArrayList<MediaInfo>());
 		}
 		

@@ -12,7 +12,11 @@
      distributed under the License is distributed on an "AS IS" BASIS,
      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
      See the License for the specific language governing permissions and
-     limitations under the License.
+     limitations under the License.
+
+
+
+
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.bravson.socialalert.android"
@@ -27,23 +31,38 @@
          The smallest screen this app works on is a phone.  The app will
          scale its UI to larger screens but doesn't make good use of them
          so allow the compatibility mode button to be shown (mostly because
-         this is just convenient for testing).
+         this is just convenient for testing).
+
     -->
     <supports-screens
         android:compatibleWidthLimitDp="480"
         android:requiresSmallestWidthDp="320" />
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    
+    <uses-feature android:name="android.hardware.camera" />
+ 	<uses-feature android:name="android.hardware.camera.autofocus" />
+ 	<uses-feature android:name="android.hardware.camera.flash"/>
 
     <application
         android:name=".AndroidApp_"
         android:allowBackup="true"
         android:hardwareAccelerated="true"
-        android:icon="@drawable/app_sample_code"
-        android:label="@string/title_activity_login" >
+        android:debuggable="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/title_activity_top_media" >
+
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyDPogZ4cZjvaz_JlYmIz-Rys5a4OCv7Z8M"/>
+        <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version"/>
+
         <activity
             android:name=".LoginActivity_"
-            android:icon="@drawable/instagram12"
             android:label="@string/title_activity_login" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -56,7 +75,19 @@
             
         </activity>
         <activity android:name=".MediaPreviewActivity_">
+			<intent-filter ></intent-filter>
         </activity>
+        <activity android:name=".CameraActivity_">
+			<intent-filter ></intent-filter>
+        </activity>
+        <activity android:name=".ClaimMediaActivity_">
+			<intent-filter ></intent-filter>
+        </activity>
+        <activity android:name=".MapActivity_">
+			<intent-filter ></intent-filter>
+        </activity>
+        <service android:name=".UploadService_" android:exported="true">
+        </service>
     </application>
 
 </manifest>

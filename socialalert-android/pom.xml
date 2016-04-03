@@ -32,9 +32,22 @@
         <dependency>
 		   <groupId>com.android.support</groupId>
 		   <artifactId>support-v13</artifactId>
-		   <version>23.1.1</version>
+		   <version>23.2.1</version>
 		   <scope>system</scope>
 		   <systemPath>${android.sdk.path}/extras/android/support/v13/android-support-v13.jar</systemPath>
+		</dependency>
+		<dependency>
+	      <groupId>com.google.android.gms</groupId>
+	      <artifactId>play-services-maps</artifactId>
+	      <version>8.4.0</version>
+	      <scope>compile</scope>
+	      <type>aar</type>
+	      <exclusions>
+	      	<exclusion>
+	      		<artifactId>support-v4</artifactId>
+	      		<groupId>com.android.support</groupId>
+	      	</exclusion>
+	      </exclusions>
 		</dependency>
 		<dependency>
 		    <groupId>com.mobsandgeeks</groupId>
@@ -76,7 +89,7 @@
 			<plugin>
 				<groupId>com.simpligility.maven.plugins</groupId>
 				<artifactId>android-maven-plugin</artifactId>
-				<version>4.3.0</version>
+				<version>4.4.1</version>
 				<configuration>
 					<sdk>
 						<platform>23</platform>
@@ -84,9 +97,8 @@
 					</sdk>
 					<undeployBeforeDeploy>true</undeployBeforeDeploy>
 					<disableConflictingDependenciesWarning>true</disableConflictingDependenciesWarning>
-					<sourceManifestFile>${project.basedir}/AndroidManifest.xml</sourceManifestFile>
-					<androidManifestFile>${project.basedir}/src/main/AndroidManifest.xml</androidManifestFile>
-					<updatedManifestFile>${project.build.directory}/AndroidManifest.xml</updatedManifestFile>
+					<!--<sourceManifestFile>${project.basedir}/AndroidManifest.xml</sourceManifestFile>-->
+					<androidManifestFile>${project.basedir}/AndroidManifest.xml</androidManifestFile>
 					<genDirectory>${project.basedir}/gen</genDirectory>
 					<resourceDirectory>${project.basedir}/res</resourceDirectory>
 					<assetsDirectory>${project.basedir}/assets</assetsDirectory>
@@ -101,6 +113,11 @@
 			<id>com.android.support</id>
 			<name>android.support</name>
 			<url>file:///C:/Dev/android-sdk/extras/android/m2repository/</url>
+		</repository>
+		<repository>
+			<id>com.google.android.gms</id>
+			<name>android.extras</name>
+			<url>file:///C:/Dev/android-sdk/extras/google/m2repository/</url>
 		</repository>
 	</repositories>
 </project>

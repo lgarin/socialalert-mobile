@@ -25,24 +25,47 @@
             android:stretchMode="columnWidth"
             android:verticalSpacing="10dp" >
         </GridView>
+        
+        <ImageButton
+            android:id="@+id/mapButton"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:scaleType="fitXY"
+            android:layout_above="@+id/cameraButton"
+            android:layout_marginBottom="10dp"
+            android:layout_alignEnd="@+id/cameraButton"
+            android:alpha="50"
+            android:contentDescription="Map"
+            android:background="?android:attr/selectableItemBackground"
+            android:src="@drawable/position_pin_pop_icon" />
 
         <ImageButton
             android:id="@+id/cameraButton"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:layout_marginBottom="20dp"
-            android:layout_marginRight="20dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:scaleType="fitXY"
+            android:layout_above="@+id/plusButton"
+            android:layout_marginBottom="10dp"
+            android:layout_alignEnd="@+id/plusButton"
             android:alpha="50"
             android:contentDescription="Camera"
-            android:maxHeight="64dp"
-            android:maxWidth="64dp"
-            android:src="@drawable/instagram12" />
+            android:background="?android:attr/selectableItemBackground"
+            android:src="@drawable/camera_pin_pop_icon" />
+
+
+        <ImageButton
+                android:id="@+id/plusButton"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:scaleType="fitXY"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:alpha="50"
+                android:contentDescription="Map"
+                android:background="?android:attr/selectableItemBackground"
+                android:src="@drawable/plus_pin_pop_icon" />
 
     </RelativeLayout>
-
-    
 
 </LinearLayout>
 
