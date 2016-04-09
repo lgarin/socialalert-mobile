@@ -54,7 +54,6 @@
         android:name=".AndroidApp_"
         android:allowBackup="true"
         android:hardwareAccelerated="true"
-        android:debuggable="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/title_activity_top_media" >
 

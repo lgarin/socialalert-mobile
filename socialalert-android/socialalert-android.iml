@@ -63,6 +63,7 @@
     <orderEntry type="library" name="Maven: com.google.android.gms:play-services-base:aar:8.4.0" level="project" />
     <orderEntry type="library" name="Maven: com.google.android.gms:play-services-basement:aar:8.4.0" level="project" />
     <orderEntry type="library" name="Maven: com.mobsandgeeks:android-saripaar:2.0.3" level="project" />
+    <orderEntry type="library" name="Maven: com.google.maps.android:android-maps-utils:aar:0.4.3" level="project" />
     <orderEntry type="library" name="Maven: com.bravson:socialalert-common:0.0.1-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: joda-time:joda-time:2.8.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.4" level="project" />

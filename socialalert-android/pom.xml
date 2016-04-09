@@ -54,6 +54,13 @@
 		    <artifactId>android-saripaar</artifactId>
 		    <version>2.0.3</version>
 		</dependency>
+		<dependency>
+			<groupId>com.google.maps.android</groupId>
+			<artifactId>android-maps-utils</artifactId>
+			<version>0.4.3</version>
+			<scope>compile</scope>
+			<type>aar</type>
+		</dependency>
 	    <dependency>
         	<artifactId>socialalert-common</artifactId>
         	<groupId>com.bravson</groupId>
